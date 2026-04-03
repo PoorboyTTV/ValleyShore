@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Valley Shore Services</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: #f0f4f8; color: #1a2e3b; min-height: 100vh; }
+    :root {
+      --ocean: #0077B6; --deep: #023047; --sky: #48CAE4;
+      --foam: #ADE8F4; --sand: #F4A261; --sand-dk: #E76F51;
+      --light: #F8FBFF; --border: #dce9f0; --radius: 10px;
+      --shadow: 0 4px 20px rgba(0,119,182,.1);
+    }
+
+    /* ===== LOGIN ===== */
+    .login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--deep) 0%, var(--ocean) 100%);
+    }
+    .login-card {
+      background: white; border-radius: 20px; padding: 48px 40px;
+      width: 100%; max-width: 400px; box-shadow: 0 24px 80px rgba(0,0,0,.25); text-align: center;
+    }
+    .login-card .logo { font-size: 2.5rem; margin-bottom: 8px; }
+    .login-card h1 { font-size: 1.4rem; font-weight: 800; color: var(--deep); margin-bottom: 4px; }
+    .login-card p { font-size: .85rem; color: #888; margin-bottom: 28px; }
+    .login-card input {
+      width: 100%; padding: 13px 16px; border: 2px solid var(--border); border-radius: 10px;
+      font-family: inherit; font-size: 1rem; outline: none; transition: border-color .2s; margin-bottom: 14px;
+    }
+    .login-card input:focus { border-color: var(--ocean); }
+    .login-card button {
+      width: 100%; padding: 13px; background: var(--ocean); color: white; border: none;
+      border-radius: 10px; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background .2s;
+    }
+    .login-card button:hover { background: var(--deep); }
+    .login-error { color: #e53935; font-size: .82rem; margin-top: 10px; min-height: 20px; }
+
+    /* ===== DASHBOARD ===== */
+    .dashboard { display: none; }
+    header {
+      background: linear-gradient(135deg, var(--deep), var(--ocean));
+      padding: 16px 28px; display: flex; align-items: center; justify-content: space-between;
+      color: white; box-shadow: 0 2px 16px rgba(0,0,0,.2);
+    }
+    header h1 { font-size: 1.1rem; font-weight: 800; }
+    .header-right { display: flex; align-items: center; gap: 14px; }
+    .header-right a { color: rgba(255,255,255,.8); font-size: .83rem; text-decoration: none; }
+    .header-right a:hover { color: var(--foam); }
+    .logout-btn {
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+      color: white; padding: 6px 16px; border-radius: 50px; font-size: .8rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background .2s;
+    }
+    .logout-btn:hover { background: rgba(255,255,255,.25); }
+
+    /* ===== TABS ===== */
+    .tabs { background: white; border-bottom: 2px solid var(--border); display: flex; padding: 0 28px; }
+    .tab {
+      padding: 16px 24px; font-size: .9rem; font-weight: 600; color: #888; cursor: pointer;
+      border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all .2s;
+    }
+    .tab.active { color: var(--ocean); border-bottom-color: var(--ocean); }
+    .tab:hover:not(.active) { color: var(--deep); }
+
+    /* ===== LAYOUT ===== */
+    .main { max-width: 1200px; margin: 28px auto; padding: 0 22px 60px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 22px; }
+    .card-header {
+      background: var(--light); border-bottom: 2px solid var(--border);
+      padding: 14px 20px; font-weight: 700; font-size: .92rem; color: var(--deep);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+    .card-body { padding: 20px; }
+    .admin-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    @media(max-width:820px){ .admin-layout { grid-template-columns: 1fr; } }
+
+    /* ===== ADMIN CALENDAR ===== */
+    .cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .cal-nav h3 { font-size: 1rem; font-weight: 700; color: var(--deep); }
+    .cal-btn { background: var(--light); border: 2px solid var(--border); border-radius: 8px; padding: 5px 14px; cursor: pointer; font-family: inherit; font-weight: 600; font-size: .85rem; color: var(--ocean); transition: all .2s; }
+    .cal-btn:hover { background: var(--foam); border-color: var(--ocean); }
+    .cal-grid-wrap { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+    .cal-day-name { text-align: center; font-size: .68rem; font-weight: 700; color: #aaa; padding: 5px 2px; text-transform: uppercase; }
+    .cal-day {
+      aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border-radius: 7px; font-size: .8rem; font-weight: 600; cursor: pointer;
+      border: 2px solid var(--border); transition: all .15s; color: var(--deep); position: relative;
+      line-height: 1.2;
+    }
+    .cal-day:hover:not(.past):not(.empty) { border-color: var(--ocean); background: var(--foam); }
+    .cal-day.empty { border-color: transparent; cursor: default; }
+    .cal-day.past { color: #ccc; cursor: default; border-color: #f0f0f0; background: #fafafa; }
+    .cal-day.today { border-color: var(--ocean); background: #e8f5ff; }
+    .cal-day.full { background: #fff0f0; border-color: #ffcdd2; color: #c62828; }
+    .cal-day.partial { background: #fff9ee; border-color: #f4d197; }
+    .cal-day.sel { background: var(--ocean); color: white; border-color: var(--ocean); }
+    .cal-day .bk-count { font-size: .58rem; font-weight: 700; color: var(--ocean); }
+    .cal-day.full .bk-count { color: #e57373; }
+    .cal-day.sel .bk-count { color: rgba(255,255,255,.85); }
+
+    /* ===== DAY PANEL ===== */
+    .no-date-msg { text-align: center; color: #aaa; font-size: .88rem; padding: 28px 0; }
+    .day-panel-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-sm { padding: 7px 14px; border-radius: 8px; font-size: .78rem; font-weight: 700; cursor: pointer; border: none; font-family: inherit; transition: all .15s; }
+    .btn-block { background: #ffebee; color: #c62828; }
+    .btn-block:hover { background: #ffcdd2; }
+    .btn-clear-day { background: #e8f5e9; color: #2e7d32; }
+    .btn-clear-day:hover { background: #c8e6c9; }
+    .btn-add { background: var(--ocean); color: white; }
+    .btn-add:hover { background: var(--deep); }
+
+    /* Slot list */
+    .slot-list { display: flex; flex-direction: column; gap: 6px; margin: 14px 0; }
+    .slot-row {
+      display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+      border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: all .15s;
+    }
+    .slot-row:hover { border-color: var(--ocean); }
+    .slot-row.booked-manual { background: #fff3e0; border-color: #ffcc80; }
+    .slot-row.booked-admin { background: #fff0f0; border-color: #ffcdd2; }
+    .slot-row.available { background: #f1f8f1; }
+    .slot-time { font-size: .8rem; font-weight: 800; color: var(--deep); min-width: 50px; flex-shrink: 0; }
+    .slot-info { flex: 1; font-size: .82rem; }
+    .slot-name { font-weight: 700; color: var(--deep); }
+    .slot-detail { font-size: .72rem; color: #888; }
+    .slot-available-label { font-size: .8rem; color: #4caf50; font-weight: 600; }
+    .slot-actions { display: flex; gap: 5px; flex-shrink: 0; }
+    .slot-btn { padding: 4px 10px; border-radius: 6px; font-size: .72rem; font-weight: 700; cursor: pointer; border: none; font-family: inherit; transition: background .15s; }
+    .slot-btn-block { background: #ffebee; color: #c62828; }
+    .slot-btn-block:hover { background: #ffcdd2; }
+    .slot-btn-unblock { background: #e8f5e9; color: #2e7d32; }
+    .slot-btn-unblock:hover { background: #c8e6c9; }
+    .slot-btn-view { background: var(--foam); color: var(--ocean); }
+    .slot-btn-view:hover { background: var(--sky); }
+    .slot-btn-delete { background: #ffebee; color: #c62828; }
+    .slot-btn-delete:hover { background: #ffcdd2; }
+
+    .save-bar {
+      background: var(--ocean); color: white; text-align: center;
+      padding: 11px; font-size: .86rem; font-weight: 700; border-radius: 8px;
+      margin-top: 12px; cursor: pointer; transition: background .2s; display: none;
+    }
+    .save-bar:hover { background: var(--deep); }
+
+    /* ===== ADD BOOKING FORM ===== */
+    .add-booking-form {
+      background: var(--light); border: 2px solid var(--border); border-radius: 10px;
+      padding: 18px; margin-top: 14px; display: none;
+    }
+    .add-booking-form h4 { font-size: .92rem; font-weight: 700; color: var(--deep); margin-bottom: 14px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media(max-width:500px){ .form-grid { grid-template-columns: 1fr; } }
+    .fg { display: flex; flex-direction: column; gap: 4px; }
+    .fg label { font-size: .72rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .06em; }
+    .fg input, .fg select, .fg textarea {
+      padding: 9px 12px; border: 2px solid var(--border); border-radius: 7px;
+      font-family: inherit; font-size: .85rem; outline: none; transition: border-color .2s; color: var(--deep);
+    }
+    .fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--ocean); }
+    .fg textarea { resize: vertical; min-height: 60px; }
+    .fg.full { grid-column: 1 / -1; }
+    .form-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .btn-save-booking { padding: 9px 22px; background: var(--sand); color: white; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; font-size: .85rem; cursor: pointer; transition: background .2s; }
+    .btn-save-booking:hover { background: var(--sand-dk); }
+    .btn-cancel-form { padding: 9px 18px; background: var(--light); color: #888; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-weight: 600; font-size: .85rem; cursor: pointer; }
+
+    /* ===== BOOKING DETAIL MODAL ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(2,48,71,.55); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; z-index: 9000;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: white; border-radius: 18px; padding: 32px 28px;
+      max-width: 480px; width: calc(100% - 32px); max-height: 90vh; overflow-y: auto;
+      transform: translateY(20px) scale(.97); transition: all .25s;
+      box-shadow: 0 24px 80px rgba(0,0,0,.22);
+    }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+    .modal-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+    .modal-top h3 { font-size: 1.15rem; font-weight: 800; color: var(--deep); }
+    .modal-close { background: var(--light); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; cursor: pointer; color: #888; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .modal-close:hover { background: var(--border); }
+    .modal-source { display: inline-block; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 3px 10px; border-radius: 50px; margin-bottom: 16px; }
+    .source-manual { background: #fff3e0; color: #e65100; }
+    .source-formspree { background: var(--foam); color: var(--ocean); }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .detail-field label { font-size: .7rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 3px; }
+    .detail-field span { font-size: .9rem; font-weight: 600; color: var(--deep); }
+    .detail-field a { color: var(--ocean); font-weight: 600; font-size: .9rem; text-decoration: none; }
+    .detail-field a:hover { text-decoration: underline; }
+    .detail-field.full { grid-column: 1 / -1; }
+    .modal-del-btn { margin-top: 20px; width: 100%; padding: 11px; background: #ffebee; color: #c62828; border: 2px solid #ffcdd2; border-radius: 8px; font-family: inherit; font-weight: 700; font-size: .88rem; cursor: pointer; transition: background .2s; }
+    .modal-del-btn:hover { background: #ffcdd2; }
+
+    /* ===== BOOKINGS TAB ===== */
+    .api-setup { background: #fff8ee; border: 1px solid #f4d197; border-radius: 8px; padding: 14px 18px; font-size: .85rem; color: #7a4f00; margin-bottom: 18px; }
+    .api-row { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .api-row input { flex: 1; padding: 9px 13px; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: .88rem; outline: none; min-width: 200px; }
+    .api-row input:focus { border-color: var(--ocean); }
+    .api-row button { padding: 9px 20px; background: var(--ocean); color: white; border: none; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: .88rem; cursor: pointer; }
+    .api-row button:hover { background: var(--deep); }
+    .booking-list { display: flex; flex-direction: column; gap: 12px; }
+    .bk-card { border: 2px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color .2s; cursor: pointer; }
+    .bk-card:hover { border-color: var(--ocean); }
+    .bk-card-head { background: var(--light); padding: 11px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .bk-card-head strong { font-size: .92rem; color: var(--deep); }
+    .bk-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .badge { font-size: .7rem; font-weight: 700; padding: 3px 10px; border-radius: 50px; white-space: nowrap; }
+    .badge-time { background: var(--foam); color: var(--ocean); }
+    .badge-manual { background: #fff3e0; color: #e65100; }
+    .badge-online { background: #e8f5e9; color: #2e7d32; }
+    .bk-card-body { padding: 12px 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 10px; }
+    .bk-field label { font-size: .67rem; font-weight: 700; color: #bbb; text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 2px; }
+    .bk-field span { font-size: .85rem; font-weight: 600; color: var(--deep); }
+    .bk-field a { color: var(--ocean); font-weight: 600; font-size: .85rem; text-decoration: none; }
+    .filter-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .filter-row input { flex: 1; min-width: 180px; padding: 8px 12px; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: .85rem; outline: none; }
+    .filter-row input:focus { border-color: var(--ocean); }
+    .filter-row select { padding: 8px 12px; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: .85rem; outline: none; color: var(--deep); }
+    .count-badge { background: var(--foam); color: var(--ocean); font-size: .75rem; font-weight: 700; padding: 4px 12px; border-radius: 50px; }
+    .empty-state { text-align: center; padding: 40px; color: #aaa; }
+    .loading-msg { text-align: center; padding: 32px; color: #aaa; font-size: .88rem; }
+
+    /* ===== SETTINGS ===== */
+    .settings-form { max-width: 380px; }
+    .settings-form .fg { margin-bottom: 12px; }
+    .btn-primary-action { padding: 11px 26px; background: var(--ocean); color: white; border: none; border-radius: 8px; font-family: inherit; font-weight: 700; font-size: .9rem; cursor: pointer; transition: background .2s; }
+    .btn-primary-action:hover { background: var(--deep); }
+    .action-msg { font-size: .82rem; margin-top: 10px; min-height: 18px; }
+    .info-list { font-size: .86rem; color: #555; line-height: 1.9; }
+    .info-list p { display: flex; gap: 8px; }
+    .info-list code { background: #f0f0f0; padding: 1px 6px; border-radius: 4px; font-size: .8rem; }
+
+    /* ===== WEATHER ===== */
+    .wind-tag { position:absolute; bottom:4px; left:50%; transform:translateX(-50%); font-size:.58rem; font-weight:800; padding:2px 5px; border-radius:5px; line-height:1.3; white-space:nowrap; pointer-events:none; }
+    .wind-calm   { background:#d4edda; color:#155724; }
+    .wind-light  { background:#d4edda; color:#155724; }
+    .wind-mod    { background:#fff3cd; color:#856404; }
+    .wind-fresh  { background:#ffe5cc; color:#7d3c00; }
+    .wind-strong { background:#f8d7da; color:#721c24; }
+    .cal-day.sel .wind-tag { opacity:.85; }
+    .forecast-admin { font-size:.75rem; padding:8px 14px; background:var(--light); border-bottom:2px solid var(--border); display:flex; gap:10px; align-items:center; flex-wrap:wrap; color:#555; }
+    .forecast-admin .fc-verdict { font-weight:800; margin-left:auto; }
+    .fc-great   { color:#2e7d32; }
+    .fc-ok      { color:#e65100; }
+    .fc-caution { color:#bf360c; }
+    .fc-danger  { color:#c62828; }
+
+    /* ===== BOOKING STATUS ===== */
+    .status-badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:.68rem; font-weight:800; letter-spacing:.03em; }
+    .status-pending  { background:#fff3e0; color:#e65100; }
+    .status-confirmed{ background:#e8f5e9; color:#2e7d32; }
+    .status-deposit  { background:#e3f2fd; color:#1565c0; }
+    .status-cancelled{ background:#fce4ec; color:#b71c1c; }
+    .status-btn-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .status-btn { padding:5px 12px; border-radius:8px; border:none; font-family:inherit; font-size:.74rem; font-weight:700; cursor:pointer; transition:opacity .15s; }
+    .status-btn:hover { opacity:.82; }
+    .status-btn.pending   { background:#fff3e0; color:#e65100; }
+    .status-btn.confirmed { background:#e8f5e9; color:#2e7d32; }
+    .status-btn.deposit   { background:#e3f2fd; color:#1565c0; }
+    .status-btn.cancelled { background:#fce4ec; color:#b71c1c; }
+
+    /* ===== BLACKOUTS ===== */
+    .blackout-list { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+    .blackout-row { display:flex; align-items:center; gap:10px; padding:9px 14px; background:var(--light); border:2px solid var(--border); border-radius:8px; font-size:.83rem; }
+    .blackout-label { flex:1; font-weight:600; color:var(--deep); }
+    .blackout-sub { font-size:.73rem; color:#888; }
+    .blackout-del { background:#ffebee; color:#c62828; border:none; border-radius:6px; padding:4px 10px; font-size:.72rem; font-weight:700; cursor:pointer; }
+
+    /* ===== PROMO CODES ===== */
+    .promo-admin-list { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+    .promo-admin-row { display:flex; align-items:center; gap:10px; padding:9px 14px; background:var(--light); border:2px solid var(--border); border-radius:8px; font-size:.84rem; }
+    .promo-code-tag { background:var(--deep); color:#fff; padding:2px 10px; border-radius:6px; font-weight:800; font-size:.8rem; letter-spacing:.06em; flex-shrink:0; }
+    .promo-pct { color:var(--ocean); font-weight:700; }
+    .promo-del { background:#ffebee; color:#c62828; border:none; border-radius:6px; padding:4px 10px; font-size:.72rem; font-weight:700; cursor:pointer; margin-left:auto; }
+    .add-row { display:grid; grid-template-columns:1fr 80px auto; gap:8px; align-items:end; }
+    .add-row input, .add-row select { padding:9px 12px; border:2px solid var(--border); border-radius:8px; font-family:inherit; font-size:.85rem; outline:none; }
+    .add-row input:focus, .add-row select:focus { border-color:var(--ocean); }
+    .add-row button { padding:9px 16px; background:var(--ocean); color:#fff; border:none; border-radius:8px; font-family:inherit; font-weight:700; font-size:.82rem; cursor:pointer; }
+
+    /* ===== INVENTORY ===== */
+    .inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .inv-row { display: flex; flex-direction: column; gap: 6px; }
+    .inv-row label { font-size: .83rem; font-weight: 700; color: var(--deep); }
+    .inv-row-inner { display: flex; align-items: center; gap: 10px; }
+    .inv-input { width: 80px; padding: 9px 12px; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; font-weight: 700; color: var(--deep); outline: none; transition: border-color .2s; text-align: center; }
+    .inv-input:focus { border-color: var(--ocean); }
+    .inv-unit { font-size: .8rem; color: var(--gray, #888); }
+    .inv-remaining { font-size: .75rem; font-weight: 700; color: #4caf50; }
+    .inv-remaining.low { color: var(--sand); }
+    .inv-remaining.none { color: #c62828; }
+    .slot-inv { font-size: .68rem; color: #888; margin-top: 3px; }
+    .slot-inv .inv-badge { display: inline-block; margin-right: 6px; padding: 1px 6px; border-radius: 10px; background: #e8f5e9; color: #2e7d32; font-weight: 700; }
+    .slot-inv .inv-badge.low { background: #fff3e0; color: #e65100; }
+    .slot-inv .inv-badge.none { background: #ffebee; color: #c62828; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="logo">🌊</div>
+    <h1>Valley Shore Admin</h1>
+    <p>Sign in to manage bookings and availability</p>
+    <input type="password" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()" autofocus />
+    <button onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <header>
+    <h1>🌊 Valley Shore — Admin</h1>
+    <div class="header-right">
+      <a href="index.html">← View Site</a>
+      <button class="logout-btn" onclick="doLogout()">Log Out</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('calendar')">📅 Availability</div>
+    <div class="tab" onclick="switchTab('bookings')">📋 Bookings</div>
+    <div class="tab" onclick="switchTab('inventory')">📦 Inventory</div>
+    <div class="tab" onclick="switchTab('settings')">⚙️ Settings</div>
+  </div>
+
+  <div class="main">
+
+    <!-- AVAILABILITY TAB -->
+    <div class="tab-panel active" id="tab-calendar">
+      <div class="admin-layout">
+
+        <!-- Calendar -->
+        <div class="card">
+          <div class="card-header">
+            <span>Select a day to manage time slots</span>
+            <div style="display:flex;gap:10px;font-size:.75rem;font-weight:700;">
+              <span style="color:#c62828;">■ Full</span>
+              <span style="color:#f4a261;">■ Partial</span>
+              <span style="color:var(--ocean);">■ Has bookings</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="cal-nav">
+              <button class="cal-btn" id="aPrevM">&#8249;</button>
+              <h3 id="aCalTitle"></h3>
+              <button class="cal-btn" id="aNextM">&#8250;</button>
+            </div>
+            <div class="cal-grid-wrap" id="aCalGrid"></div>
+          </div>
+        </div>
+
+        <!-- Day Panel -->
+        <div class="card">
+          <div class="card-header">
+            <span id="dayPanelTitle">Select a day</span>
+            <div class="day-panel-actions" id="dayActions" style="display:none;">
+              <button class="btn-sm btn-block" onclick="blockAll()">Block Full Day</button>
+              <button class="btn-sm btn-clear-day" onclick="clearAllSlots()">Clear All</button>
+              <button class="btn-sm btn-add" onclick="toggleAddForm()">+ Add Booking</button>
+            </div>
+          </div>
+          <div id="adminForecastBar" style="display:none;"></div>
+          <div class="card-body">
+            <div id="dayPanelBody">
+              <div class="no-date-msg">← Click a date on the calendar</div>
+            </div>
+
+            <!-- Add Booking Form -->
+            <div class="add-booking-form" id="addBookingForm">
+              <h4>Add Manual Booking</h4>
+              <div class="form-grid">
+                <div class="fg">
+                  <label>Name *</label>
+                  <input type="text" id="nb_name" placeholder="Jane Smith" />
+                </div>
+                <div class="fg">
+                  <label>Phone *</label>
+                  <input type="tel" id="nb_phone" placeholder="250-555-0100" />
+                </div>
+                <div class="fg">
+                  <label>Email</label>
+                  <input type="email" id="nb_email" placeholder="jane@example.com" />
+                </div>
+                <div class="fg">
+                  <label>Equipment *</label>
+                  <select id="nb_equip">
+                    <option value="sup">Paddleboard</option>
+                    <option value="single">Single Kayak</option>
+                    <option value="tandem">2.5-Person Kayak</option>
+                    <option value="bundle">Dual Bundle</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label>Quantity *</label>
+                  <select id="nb_qty">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label>Start Time *</label>
+                  <select id="nb_start">
+                    <option value="day">Full Day (8am–6pm)</option>
+                    <option value="8">8:00 AM</option>
+                    <option value="9">9:00 AM</option>
+                    <option value="10">10:00 AM</option>
+                    <option value="11">11:00 AM</option>
+                    <option value="12">12:00 PM</option>
+                    <option value="13">1:00 PM</option>
+                    <option value="14">2:00 PM</option>
+                    <option value="15">3:00 PM</option>
+                    <option value="16">4:00 PM</option>
+                    <option value="17">5:00 PM</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label>Duration *</label>
+                  <select id="nb_dur">
+                    <option value="day">Full Day</option>
+                    <option value="1">1 Hour</option>
+                    <option value="2">2 Hours</option>
+                    <option value="3">3 Hours</option>
+                    <option value="4">4 Hours</option>
+                  </select>
+                </div>
+                <div class="fg full">
+                  <label>Drop-off Location</label>
+                  <input type="text" id="nb_location" placeholder="e.g. Osoyoos Beach..." />
+                </div>
+                <div class="fg">
+                  <label>Local Discount?</label>
+                  <select id="nb_local">
+                    <option value="no">No</option>
+                    <option value="yes">Yes (10% off)</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label>Status</label>
+                  <select id="nb_status">
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="deposit">Deposit Paid</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label>Deposit / Payment</label>
+                  <input type="text" id="nb_payment" placeholder="e.g. Paid cash $120" />
+                </div>
+                <div class="fg full">
+                  <label>Notes</label>
+                  <textarea id="nb_notes" placeholder="Any details from the call..."></textarea>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn-save-booking" onclick="saveManualBooking()">Save Booking</button>
+                <button class="btn-cancel-form" onclick="toggleAddForm()">Cancel</button>
+              </div>
+            </div>
+
+            <div class="save-bar" id="saveBar" onclick="saveSlots()">💾 Save Changes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLACKOUTS CARD (below the 2-col grid) -->
+    <div class="card">
+      <div class="card-header">
+        🚫 Seasonal Blackout Dates
+        <span style="font-size:.75rem;font-weight:500;color:#888;">Auto-block date ranges — great for off-season or holidays</span>
+      </div>
+      <div class="card-body">
+        <div class="blackout-list" id="blackoutList"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+          <div class="fg">
+            <label>From</label>
+            <input type="date" id="bl_from" style="padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none;width:100%;" />
+          </div>
+          <div class="fg">
+            <label>To</label>
+            <input type="date" id="bl_to" style="padding:9px 12px;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none;width:100%;" />
+          </div>
+          <button class="btn-add btn-sm" onclick="addBlackout()" style="height:40px;padding:0 18px;">Add</button>
+        </div>
+        <p style="font-size:.75rem;color:#aaa;margin-top:8px;">Blackouts are for your reference — they don't auto-block the public calendar. Use the day panel to block individual dates.</p>
+      </div>
+    </div>
+
+    <!-- BOOKINGS TAB -->
+    <div class="tab-panel" id="tab-bookings">
+      <div class="api-setup" id="apiSetup">
+        <strong>Connect Formspree to see online bookings.</strong>
+        Go to <strong>formspree.io → Account → API Keys</strong> and paste your key below. Saved locally in your browser.
+        <div class="api-row">
+          <input type="password" id="apiKeyInput" placeholder="Formspree API key" />
+          <button onclick="loadFormspree()">Load Online Bookings</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span>All Bookings</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="count-badge" id="bookingCount">—</span>
+            <button class="btn-sm btn-add" onclick="exportCSV()" style="font-size:.72rem;">⬇ Export CSV</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="filter-row">
+            <input type="text" id="searchInput" placeholder="Search name, phone, date, location..." oninput="renderBookingsList()" />
+            <select id="sourceFilter" onchange="renderBookingsList()">
+              <option value="all">All sources</option>
+              <option value="manual">Manual (phone)</option>
+              <option value="online">Online form</option>
+            </select>
+          </div>
+          <div class="booking-list" id="bookingList">
+            <div class="loading-msg">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVENTORY TAB -->
+    <div class="tab-panel" id="tab-inventory">
+      <div class="card">
+        <div class="card-header">📦 Equipment Inventory</div>
+        <div class="card-body">
+          <p style="font-size:.85rem;color:#666;margin-bottom:18px;">Set how many of each item you own. Customers can request up to this quantity when booking.</p>
+          <div class="inv-grid" id="inventoryGrid"></div>
+          <button class="btn-primary-action" onclick="saveInventory()">Save Inventory</button>
+          <div class="action-msg" id="invMsg" style="margin-top:10px;font-size:.85rem;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="tab-panel" id="tab-settings">
+
+      <div class="card">
+        <div class="card-header">📢 Public Notice Banner</div>
+        <div class="card-body">
+          <p style="font-size:.84rem;color:#666;margin-bottom:12px;">Show a message at the top of your website — great for closures, weather alerts, or special announcements. Leave blank to hide it.</p>
+          <div class="settings-form">
+            <div class="fg">
+              <label>Banner Message</label>
+              <input type="text" id="noticeInput" placeholder="e.g. Closed this weekend — high winds forecast." maxlength="200" />
+            </div>
+            <button class="btn-primary-action" onclick="saveNotice()">Save Banner</button>
+            <button style="margin-left:8px;padding:10px 18px;background:#ffebee;color:#c62828;border:none;border-radius:8px;font-family:inherit;font-weight:700;font-size:.83rem;cursor:pointer;" onclick="clearNotice()">Clear Banner</button>
+            <div class="action-msg" id="noticeMsg" style="margin-top:8px;font-size:.84rem;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">🏷 Promo Codes</div>
+        <div class="card-body">
+          <div class="promo-admin-list" id="promoAdminList"></div>
+          <div class="add-row">
+            <div class="fg">
+              <label>Code</label>
+              <input type="text" id="newPromoCode" placeholder="e.g. SUMMER20" style="text-transform:uppercase;" />
+            </div>
+            <div class="fg">
+              <label>% Off</label>
+              <input type="number" id="newPromoPct" min="1" max="100" placeholder="10" />
+            </div>
+            <button onclick="addPromoCode()" style="margin-top:24px;">Add Code</button>
+          </div>
+          <div class="action-msg" id="promoAdminMsg" style="margin-top:8px;font-size:.84rem;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">💳 Stripe Payment Link</div>
+        <div class="card-body">
+          <p style="font-size:.84rem;color:#666;margin-bottom:12px;">Add a Stripe Payment Link so customers can pay a deposit after booking. The link will appear in the booking confirmation message.</p>
+          <div class="settings-form">
+            <div class="fg">
+              <label>Stripe Payment Link URL</label>
+              <input type="url" id="stripeLink" placeholder="https://buy.stripe.com/..." />
+            </div>
+            <button class="btn-primary-action" onclick="saveStripeLink()">Save Link</button>
+            <div class="action-msg" id="stripeLinkMsg" style="margin-top:8px;font-size:.84rem;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">🔑 Change Admin Password</div>
+        <div class="card-body">
+          <div class="settings-form">
+            <div class="fg"><label>Current Password</label><input type="password" id="curPw" /></div>
+            <div class="fg"><label>New Password</label><input type="password" id="newPw" /></div>
+            <div class="fg"><label>Confirm New Password</label><input type="password" id="confirmPw" /></div>
+            <button class="btn-primary-action" onclick="changePassword()">Update Password</button>
+            <div class="action-msg" id="pwMsg"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">ℹ️ Info</div>
+        <div class="card-body info-list">
+          <p>• Default password: <strong>ValleyShore2026</strong></p>
+          <p>• Booked slots sync automatically to the public calendar via localStorage.</p>
+          <p>• Manual bookings are stored in your browser — they won't be lost unless you clear site data.</p>
+          <p>• Formspree form ID: <code>mnjobejw</code></p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-top">
+      <h3 id="modalName">—</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <span class="modal-source" id="modalSource"></span>
+    <div class="detail-grid" id="modalBody"></div>
+    <div id="modalStatusRow" style="display:none;margin-top:12px;">
+      <div style="font-size:.78rem;font-weight:700;color:#888;margin-bottom:6px;">CHANGE STATUS</div>
+      <div class="status-btn-row">
+        <button class="status-btn pending"   onclick="setBookingStatus('pending')">Pending</button>
+        <button class="status-btn confirmed" onclick="setBookingStatus('confirmed')">Confirmed</button>
+        <button class="status-btn deposit"   onclick="setBookingStatus('deposit')">Deposit Paid</button>
+        <button class="status-btn cancelled" onclick="setBookingStatus('cancelled')">Cancelled</button>
+      </div>
+    </div>
+    <button class="modal-del-btn" id="modalDelBtn" style="display:none;" onclick="deleteFromModal()">🗑 Delete This Booking</button>
+  </div>
+</div>
+
+<script>
+// ==================== AUTH ====================
+const DEFAULT_HASH = 'b478abffeb4abd87fd14d14594c83b7dd3401944133a63551ded2345ee11702a';
+
+async function sha256(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function getHash() { return localStorage.getItem('vss_admin_pw_hash') || DEFAULT_HASH; }
+
+async function doLogin() {
+  const pw = document.getElementById('pwInput').value;
+  if (!pw) return;
+  if (await sha256(pw) === getHash()) {
+    sessionStorage.setItem('vss_auth','1');
+    showDashboard();
+  } else {
+    document.getElementById('loginError').textContent = 'Incorrect password.';
+    document.getElementById('pwInput').value = '';
+  }
+}
+function doLogout() {
+  sessionStorage.removeItem('vss_auth');
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginError').textContent = '';
+}
+function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  initAll();
+}
+if (sessionStorage.getItem('vss_auth') === '1') showDashboard();
+
+async function changePassword() {
+  const cur = document.getElementById('curPw').value;
+  const nw  = document.getElementById('newPw').value;
+  const cf  = document.getElementById('confirmPw').value;
+  const msg = document.getElementById('pwMsg');
+  if (!cur||!nw||!cf) { msg.style.color='#c62828'; msg.textContent='All fields required.'; return; }
+  if (nw !== cf)       { msg.style.color='#c62828'; msg.textContent='Passwords do not match.'; return; }
+  if (nw.length < 6)   { msg.style.color='#c62828'; msg.textContent='Minimum 6 characters.'; return; }
+  if (await sha256(cur) !== getHash()) { msg.style.color='#c62828'; msg.textContent='Current password is wrong.'; return; }
+  localStorage.setItem('vss_admin_pw_hash', await sha256(nw));
+  msg.style.color='#2e7d32'; msg.textContent='✓ Password updated!';
+  ['curPw','newPw','confirmPw'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ==================== TABS ====================
+function switchTab(name) {
+  ['calendar','bookings','inventory','settings'].forEach((t,i) => {
+    document.querySelectorAll('.tab')[i].classList.toggle('active', t===name);
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
+  });
+  if (name==='bookings')  renderBookingsList();
+  if (name==='inventory') renderInventoryTab();
+  if (name==='settings')  initSettingsTab();
+}
+
+// ==================== DATA ====================
+const AVAILABLE_HOURS = [8,9,10,11,12,13,14,15,16,17];
+const EQUIP_LABELS = {sup:'Paddleboard',single:'Single Kayak',tandem:'2.5p Kayak',bundle:'Dual Bundle'};
+const RATES = {sup:{hr:20,day:120},single:{hr:20,day:120},tandem:{hr:20,day:120},bundle:{hr:30,day:200}};
+const DEFAULT_EQUIPMENT = [
+  { id:'sup',    name:'Stand-Up Paddleboard' },
+  { id:'single', name:'Single Kayak' },
+  { id:'tandem', name:'2.5-Person Kayak' },
+  { id:'bundle', name:'Dual Kayak Bundle' },
+];
+
+let bookedSlots    = JSON.parse(localStorage.getItem('vss_booked_slots')    || '{}');
+let manualBookings = JSON.parse(localStorage.getItem('vss_manual_bookings') || '[]');
+let onlineBookings = [];
+
+function saveAll() {
+  localStorage.setItem('vss_booked_slots',    JSON.stringify(bookedSlots));
+  localStorage.setItem('vss_manual_bookings', JSON.stringify(manualBookings));
+}
+
+// ==================== WEATHER ====================
+let weatherData = {};
+
+async function fetchWeather() {
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=49.0327&longitude=-119.4686' +
+      '&daily=windspeed_10m_max,windgusts_10m_max,weathercode,precipitation_sum' +
+      '&wind_speed_unit=kmh&timezone=America%2FVancouver&forecast_days=14';
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const data = await res.json();
+    const { time, windspeed_10m_max, windgusts_10m_max, weathercode, precipitation_sum } = data.daily;
+    time.forEach((date, i) => {
+      weatherData[date] = {
+        windspeed:     Math.round(windspeed_10m_max[i]),
+        windgusts:     Math.round(windgusts_10m_max[i]),
+        weathercode:   weathercode[i],
+        precipitation: precipitation_sum[i] || 0,
+      };
+    });
+    renderAdminCal();
+  } catch(e) {}
+}
+
+function wmoIcon(code) {
+  if (code === 0) return '☀️';
+  if (code <= 2)  return '🌤️';
+  if (code === 3) return '☁️';
+  if (code <= 48) return '🌫️';
+  if (code <= 55) return '🌦️';
+  if (code <= 67) return '🌧️';
+  if (code <= 77) return '🌨️';
+  if (code <= 82) return '🌦️';
+  if (code >= 95) return '⛈️';
+  return '🌤️';
+}
+
+function windClass(spd) {
+  if (spd < 12) return 'wind-calm';
+  if (spd < 20) return 'wind-light';
+  if (spd < 30) return 'wind-mod';
+  if (spd < 40) return 'wind-fresh';
+  return 'wind-strong';
+}
+
+function windTag(w) {
+  return `<span class="wind-tag ${windClass(w.windspeed)}">💨 ${w.windspeed}</span>`;
+}
+
+function renderAdminForecast(dateStr) {
+  const el = document.getElementById('adminForecastBar');
+  const w = weatherData[dateStr];
+  if (!w) { el.style.display='none'; return; }
+  const icon = wmoIcon(w.weathercode);
+  let verdict, vcls;
+  if (w.windspeed < 12)      { verdict='Ideal conditions';           vcls='fc-great'; }
+  else if (w.windspeed < 20) { verdict='Good — light winds';         vcls='fc-great'; }
+  else if (w.windspeed < 30) { verdict='Manageable — moderate wind'; vcls='fc-ok'; }
+  else if (w.windspeed < 40) { verdict='Breezy — caution advised';   vcls='fc-caution'; }
+  else                       { verdict='Too windy — consider rescheduling'; vcls='fc-danger'; }
+  el.innerHTML = `<div class="forecast-admin">
+    <span>${icon}</span>
+    <span><strong>💨 ${w.windspeed} km/h</strong> (gusts ${w.windgusts} km/h)</span>
+    ${w.precipitation > 0 ? `<span>🌧️ ${w.precipitation.toFixed(1)} mm rain</span>` : ''}
+    <span class="fc-verdict ${vcls}">${verdict}</span>
+  </div>`;
+  el.style.display = 'block';
+}
+
+// ==================== INVENTORY ====================
+function getInventory() {
+  try { return JSON.parse(localStorage.getItem('vss_inventory') || '{}'); } catch(e) { return {}; }
+}
+
+function getRemainingForHour(date, hour) {
+  const inv = getInventory();
+  const result = {};
+  DEFAULT_EQUIPMENT.forEach(e => {
+    if (!inv[e.id]) return;
+    const used = manualBookings
+      .filter(b => b.date === date && b.equipment === e.id && hoursForBooking(b).includes(hour))
+      .reduce((sum, b) => sum + (parseInt(b.quantity) || 1), 0);
+    result[e.id] = Math.max(0, (inv[e.id] || 0) - used);
+  });
+  return result;
+}
+
+function renderInventoryTab() {
+  const inv = getInventory();
+  let html = '<div class="inv-grid">';
+  DEFAULT_EQUIPMENT.forEach(e => {
+    const count = inv[e.id] || 0;
+    html += `<div class="inv-row">
+      <label>${e.name}</label>
+      <div class="inv-row-inner">
+        <input type="number" id="inv_${e.id}" min="0" max="20" value="${count}" class="inv-input" />
+        <span class="inv-unit">units</span>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('inventoryGrid').innerHTML = html;
+  document.getElementById('invMsg').textContent = '';
+}
+
+function saveInventory() {
+  const inv = {};
+  DEFAULT_EQUIPMENT.forEach(e => {
+    const val = parseInt(document.getElementById('inv_'+e.id)?.value) || 0;
+    if (val > 0) inv[e.id] = val;
+  });
+  localStorage.setItem('vss_inventory', JSON.stringify(inv));
+  const msg = document.getElementById('invMsg');
+  msg.style.color = '#2e7d32';
+  msg.textContent = '✓ Inventory saved!';
+  setTimeout(() => { msg.textContent = ''; }, 3000);
+}
+
+function toStr(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function fmtH(h)  { return h===12?'12pm':h<12?`${h}am`:`${h-12}pm`; }
+function fmtHour(h){ return h===12?'12:00 PM':h<12?`${h}:00 AM`:`${h-12}:00 PM`; }
+
+function hoursForBooking(b) {
+  if (b.startHour === 'day') return AVAILABLE_HOURS;
+  const dur = parseInt(b.duration);
+  const hrs = [];
+  for (let i = 0; i < dur; i++) hrs.push(parseInt(b.startHour) + i);
+  return hrs;
+}
+
+function getBookingForHour(ds, h) {
+  return manualBookings.find(b => b.date === ds && hoursForBooking(b).includes(h));
+}
+
+function isFullDay(ds)    { const b=bookedSlots[ds]||[]; return AVAILABLE_HOURS.every(h=>b.includes(h)); }
+function isPartialDay(ds) { const b=bookedSlots[ds]||[]; return b.length>0 && !isFullDay(ds); }
+function bookingCountForDay(ds) {
+  const hrs = bookedSlots[ds] || [];
+  if (!hrs.length) return 0;
+  // Count distinct bookings touching this day
+  const ids = new Set();
+  manualBookings.filter(b=>b.date===ds).forEach(b=>ids.add(b.id));
+  return ids.size;
+}
+
+// ==================== ADMIN CALENDAR ====================
+let aYear, aMonth, aSelDate = null;
+
+function initAll() {
+  const now = new Date();
+  aYear = now.getFullYear(); aMonth = now.getMonth();
+  renderAdminCal();
+  // Pre-load formspree key if saved
+  const k = localStorage.getItem('vss_formspree_key');
+  if (k) document.getElementById('apiKeyInput').value = k;
+  renderBookingsList();
+  renderInventoryTab();
+  renderBlackoutList();
+  fetchWeather();
+}
+
+function renderAdminCal() {
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  document.getElementById('aCalTitle').textContent = `${MONTHS[aMonth]} ${aYear}`;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const firstDay = new Date(aYear,aMonth,1).getDay();
+  const dim = new Date(aYear,aMonth+1,0).getDate();
+  let html = ['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=dim;d++){
+    const dt = new Date(aYear,aMonth,d);
+    const ds = toStr(dt);
+    const isPast = dt<today, isToday=dt.getTime()===today.getTime();
+    const full=isFullDay(ds), partial=isPartialDay(ds), isSel=ds===aSelDate;
+    const cnt = bookingCountForDay(ds);
+    let cls='cal-day';
+    if(isPast) cls+=' past';
+    else if(isSel) cls+=' sel';
+    else if(full) cls+=' full';
+    else if(partial) cls+=' partial';
+    if(isToday) cls+=' today';
+    const cntHtml = cnt>0 ? `<span class="bk-count">${cnt} bk</span>` : '';
+    const wt = (!isPast && weatherData[ds]) ? windTag(weatherData[ds]) : '';
+    const click = !isPast ? `onclick="selectAdminDate('${ds}')"` : '';
+    html+=`<div class="${cls}" ${click}>${d}${cntHtml}${wt}</div>`;
+  }
+  document.getElementById('aCalGrid').innerHTML = html;
+}
+
+document.getElementById('aPrevM').addEventListener('click',()=>{ aMonth--;if(aMonth<0){aMonth=11;aYear--;} aSelDate=null; renderAdminCal(); resetDayPanel(); });
+document.getElementById('aNextM').addEventListener('click',()=>{ aMonth++;if(aMonth>11){aMonth=0;aYear++;} aSelDate=null; renderAdminCal(); resetDayPanel(); });
+
+function resetDayPanel() {
+  document.getElementById('dayPanelTitle').textContent='Select a day';
+  document.getElementById('dayActions').style.display='none';
+  document.getElementById('dayPanelBody').innerHTML='<div class="no-date-msg">← Click a date on the calendar</div>';
+  document.getElementById('saveBar').style.display='none';
+  document.getElementById('addBookingForm').style.display='none';
+  document.getElementById('adminForecastBar').style.display='none';
+}
+
+function selectAdminDate(ds) {
+  aSelDate = ds;
+  renderAdminCal();
+  renderDayPanel();
+  renderAdminForecast(ds);
+  document.getElementById('addBookingForm').style.display='none';
+  // Pre-fill date in add form
+  document.getElementById('nb_name').value='';
+  document.getElementById('nb_phone').value='';
+  document.getElementById('nb_email').value='';
+  document.getElementById('nb_location').value='';
+  document.getElementById('nb_notes').value='';
+  document.getElementById('nb_payment').value='';
+}
+
+function renderDayPanel() {
+  if (!aSelDate) return;
+  const d = new Date(aSelDate+'T12:00:00');
+  document.getElementById('dayPanelTitle').textContent =
+    d.toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('dayActions').style.display='flex';
+  document.getElementById('saveBar').style.display='block';
+
+  const blocked = bookedSlots[aSelDate] || [];
+
+  // Full day bookings
+  const fullDayBk = manualBookings.find(b=>b.date===aSelDate && b.startHour==='day');
+
+  let html = '<div class="slot-list">';
+
+  // Full Day row
+  const isFullBlocked = AVAILABLE_HOURS.every(h=>blocked.includes(h));
+  if (fullDayBk) {
+    html += slotRow('day', fullDayBk, true);
+  } else {
+    const cls = isFullBlocked ? 'booked-admin' : 'available';
+    const label = isFullBlocked ? '<span class="slot-name">Blocked (Full Day)</span>' : '<span class="slot-available-label">Full Day — Available</span>';
+    const btns = isFullBlocked
+      ? `<button class="slot-btn slot-btn-unblock" onclick="unblockHours(${JSON.stringify(AVAILABLE_HOURS)});event.stopPropagation()">Unblock</button>`
+      : `<button class="slot-btn slot-btn-block" onclick="blockHours(${JSON.stringify(AVAILABLE_HOURS)});event.stopPropagation()">Block</button>`;
+    html += `<div class="slot-row ${cls}"><span class="slot-time">All Day</span><div class="slot-info">${label}</div><div class="slot-actions">${btns}</div></div>`;
+  }
+
+  AVAILABLE_HOURS.forEach(h => {
+    const bk = getBookingForHour(aSelDate, h);
+    const isBlocked = blocked.includes(h);
+    html += bk ? slotRow(h, bk, false) : availableRow(h, isBlocked, aSelDate);
+  });
+
+  html += '</div>';
+  document.getElementById('dayPanelBody').innerHTML = html;
+}
+
+function slotRow(h, bk, isFullDay) {
+  const timeLabel = h === 'day' ? 'Full Day' : fmtH(h);
+  const endH = h === 'day' ? '' : ` – ${fmtH(parseInt(bk.startHour) + parseInt(bk.duration))}`;
+  const equip = EQUIP_LABELS[bk.equipment] || bk.equipment;
+  const qty = parseInt(bk.quantity) || 1;
+  const qtyLabel = qty > 1 ? ` × ${qty}` : '';
+  const sBadge = `<span class="status-badge status-${bk.status||'pending'}" style="margin-left:6px;">${statusLabel(bk.status)}</span>`;
+  return `<div class="slot-row booked-manual" onclick="showBookingDetail('${bk.id}')">
+    <span class="slot-time">${timeLabel}</span>
+    <div class="slot-info">
+      <div class="slot-name">${bk.name}${endH ? ` <span style="font-weight:400;color:#888;font-size:.75rem;">${endH}</span>` : ''}${sBadge}</div>
+      <div class="slot-detail">${equip}${qtyLabel} · ${bk.phone}${bk.location?' · '+bk.location:''}</div>
+    </div>
+    <div class="slot-actions">
+      <button class="slot-btn slot-btn-view" onclick="showBookingDetail('${bk.id}');event.stopPropagation()">View</button>
+      <button class="slot-btn slot-btn-delete" onclick="deleteBooking('${bk.id}');event.stopPropagation()">Del</button>
+    </div>
+  </div>`;
+}
+
+function invBadgesHtml(date, hour) {
+  const inv = getInventory();
+  const equipWithInv = DEFAULT_EQUIPMENT.filter(e => (inv[e.id] || 0) > 0);
+  if (!equipWithInv.length) return '';
+  const remaining = getRemainingForHour(date, hour);
+  const badges = equipWithInv.map(e => {
+    const rem = remaining[e.id] ?? inv[e.id];
+    const total = inv[e.id];
+    const cls = rem === 0 ? 'none' : rem <= 1 ? 'low' : '';
+    const short = e.name.split(' ')[0];
+    return `<span class="inv-badge${cls?' '+cls:''}">${short}: ${rem}/${total}</span>`;
+  }).join('');
+  return `<div class="slot-inv">${badges}</div>`;
+}
+
+function availableRow(h, isBlocked, date) {
+  const cls = isBlocked ? 'booked-admin' : 'available';
+  const label = isBlocked ? '<span class="slot-name">Blocked</span>' : '<span class="slot-available-label">Available</span>';
+  const btn = isBlocked
+    ? `<button class="slot-btn slot-btn-unblock" onclick="toggleHour(${h});event.stopPropagation()">Unblock</button>`
+    : `<button class="slot-btn slot-btn-block"   onclick="toggleHour(${h});event.stopPropagation()">Block</button>`;
+  const invHtml = !isBlocked && date ? invBadgesHtml(date, h) : '';
+  return `<div class="slot-row ${cls}">
+    <span class="slot-time">${fmtH(h)}</span>
+    <div class="slot-info">${label}${invHtml}</div>
+    <div class="slot-actions">${btn}</div>
+  </div>`;
+}
+
+function toggleHour(h) {
+  if (!aSelDate) return;
+  if (!bookedSlots[aSelDate]) bookedSlots[aSelDate] = [];
+  const idx = bookedSlots[aSelDate].indexOf(h);
+  if (idx >= 0) bookedSlots[aSelDate].splice(idx,1);
+  else bookedSlots[aSelDate].push(h);
+  if (!bookedSlots[aSelDate].length) delete bookedSlots[aSelDate];
+  saveAll(); renderDayPanel(); renderAdminCal();
+}
+
+function blockHours(hrs) {
+  if (!aSelDate) return;
+  if (!bookedSlots[aSelDate]) bookedSlots[aSelDate] = [];
+  hrs.forEach(h => { if(!bookedSlots[aSelDate].includes(h)) bookedSlots[aSelDate].push(h); });
+  saveAll(); renderDayPanel(); renderAdminCal();
+}
+
+function unblockHours(hrs) {
+  if (!aSelDate || !bookedSlots[aSelDate]) return;
+  bookedSlots[aSelDate] = bookedSlots[aSelDate].filter(h=>!hrs.includes(h));
+  if (!bookedSlots[aSelDate].length) delete bookedSlots[aSelDate];
+  saveAll(); renderDayPanel(); renderAdminCal();
+}
+
+function blockAll()     { blockHours(AVAILABLE_HOURS); }
+function clearAllSlots(){ unblockHours(AVAILABLE_HOURS); }
+
+function saveSlots() {
+  saveAll();
+  const bar = document.getElementById('saveBar');
+  bar.textContent = '✓ Saved!';
+  bar.style.background = '#2e7d32';
+  setTimeout(()=>{ bar.textContent='💾 Save Changes'; bar.style.background=''; }, 2000);
+}
+
+// ==================== ADD MANUAL BOOKING ====================
+function toggleAddForm() {
+  const f = document.getElementById('addBookingForm');
+  f.style.display = f.style.display==='none' ? 'block' : 'none';
+}
+
+function saveManualBooking() {
+  if (!aSelDate) return;
+  const name  = document.getElementById('nb_name').value.trim();
+  const phone = document.getElementById('nb_phone').value.trim();
+  if (!name || !phone) { alert('Name and phone are required.'); return; }
+
+  const startHour = document.getElementById('nb_start').value;
+  const duration  = document.getElementById('nb_dur').value;
+
+  const bk = {
+    id:        Date.now().toString(),
+    source:    'manual',
+    date:      aSelDate,
+    startHour: startHour === 'day' ? 'day' : parseInt(startHour),
+    duration:  duration === 'day' ? 'day' : parseInt(duration),
+    name,
+    phone,
+    email:     document.getElementById('nb_email').value.trim(),
+    equipment: document.getElementById('nb_equip').value,
+    quantity:  parseInt(document.getElementById('nb_qty').value) || 1,
+    status:    document.getElementById('nb_status').value || 'pending',
+    location:  document.getElementById('nb_location').value.trim(),
+    local:     document.getElementById('nb_local').value,
+    payment:   document.getElementById('nb_payment').value.trim(),
+    notes:     document.getElementById('nb_notes').value.trim(),
+    created_at: new Date().toISOString(),
+  };
+
+  // Block the hours
+  blockHours(hoursForBooking(bk));
+  manualBookings.push(bk);
+  saveAll();
+  toggleAddForm();
+  renderDayPanel();
+  renderAdminCal();
+}
+
+// ==================== DELETE BOOKING ====================
+function deleteBooking(id) {
+  if (!confirm('Delete this booking? The time slot will be unblocked.')) return;
+  const bk = manualBookings.find(b=>b.id===id);
+  if (bk) {
+    manualBookings = manualBookings.filter(b=>b.id!==id);
+    // Unblock hours only if no other booking uses them
+    const hrs = hoursForBooking(bk);
+    hrs.forEach(h => {
+      const stillUsed = manualBookings.some(b=>b.date===bk.date && hoursForBooking(b).includes(h));
+      if (!stillUsed && bookedSlots[bk.date]) {
+        bookedSlots[bk.date] = bookedSlots[bk.date].filter(bh=>bh!==h);
+        if (!bookedSlots[bk.date].length) delete bookedSlots[bk.date];
+      }
+    });
+    saveAll();
+  }
+  closeModal();
+  renderDayPanel();
+  renderAdminCal();
+  renderBookingsList();
+}
+
+// ==================== BOOKING DETAIL MODAL ====================
+let modalCurrentId = null;
+
+function showBookingDetail(id) {
+  const bk = manualBookings.find(b=>b.id===id);
+  if (!bk) return;
+  modalCurrentId = id;
+
+  document.getElementById('modalName').textContent = bk.name;
+  document.getElementById('modalSource').textContent = 'Manual / Phone';
+  document.getElementById('modalSource').className = 'modal-source source-manual';
+
+  const timeLabel = bk.startHour==='day' ? 'Full Day (8am–6pm)'
+    : `${fmtHour(parseInt(bk.startHour))} – ${fmtHour(parseInt(bk.startHour)+(parseInt(bk.duration)||1))}`;
+  const d = new Date(bk.date+'T12:00:00');
+  const dateLabel = d.toLocaleDateString('en-CA',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
+  const equip = EQUIP_LABELS[bk.equipment]||bk.equipment;
+  const rate = RATES[bk.equipment]||{hr:20,day:120};
+  let est = bk.startHour==='day' ? rate.day : rate.hr*(parseInt(bk.duration)||1);
+  if (bk.local==='yes') est = Math.round(est*0.9);
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="detail-field"><label>Date</label><span>${dateLabel}</span></div>
+    <div class="detail-field"><label>Time</label><span>${timeLabel}</span></div>
+    <div class="detail-field"><label>Phone</label><a href="tel:${bk.phone}">${bk.phone}</a></div>
+    <div class="detail-field"><label>Email</label><span>${bk.email ? `<a href="mailto:${bk.email}">${bk.email}</a>` : '—'}</span></div>
+    <div class="detail-field"><label>Equipment</label><span>${equip}${(parseInt(bk.quantity)||1)>1?` × ${bk.quantity}`:''}</span></div>
+    <div class="detail-field"><label>Duration</label><span>${bk.duration==='day'?'Full Day':bk.duration+' hr'}</span></div>
+    <div class="detail-field"><label>Location</label><span>${bk.location||'—'}</span></div>
+    <div class="detail-field"><label>Local Discount</label><span>${bk.local==='yes'?'Yes (10% off)':'No'}</span></div>
+    <div class="detail-field"><label>Est. Total</label><span>$${est}${bk.local==='yes'?' (10% off)':''}</span></div>
+    <div class="detail-field"><label>Status</label><span class="status-badge status-${bk.status||'pending'}">${statusLabel(bk.status)}</span></div>
+    <div class="detail-field"><label>Payment</label><span>${bk.payment||'—'}</span></div>
+    ${bk.notes?`<div class="detail-field full"><label>Notes</label><span>${bk.notes}</span></div>`:''}
+    <div class="detail-field"><label>Added</label><span>${new Date(bk.created_at).toLocaleString('en-CA')}</span></div>
+  `;
+  document.getElementById('modalStatusRow').style.display = 'block';
+  document.getElementById('modalDelBtn').style.display = 'block';
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function showOnlineBookingDetail(idx) {
+  const bk = onlineBookings[idx];
+  if (!bk) return;
+  modalCurrentId = null;
+  const data = bk.answers || bk;
+  const get = k => data[k]?.value || data[k] || '—';
+  document.getElementById('modalName').textContent = get('name');
+  document.getElementById('modalSource').textContent = 'Online Booking Form';
+  document.getElementById('modalSource').className = 'modal-source source-formspree';
+  const equip = {sup:'Paddleboard',single:'Single Kayak',tandem:'2.5p Kayak',bundle:'Dual Bundle'}[get('equipment')]||get('equipment');
+  document.getElementById('modalBody').innerHTML = `
+    <div class="detail-field"><label>Date &amp; Time</label><span>${get('booking_date_time')||get('dates')}</span></div>
+    <div class="detail-field"><label>Phone</label><a href="tel:${get('phone')}">${get('phone')}</a></div>
+    <div class="detail-field"><label>Email</label><span>${get('email')!=='—'?`<a href="mailto:${get('email')}">${get('email')}</a>`:'—'}</span></div>
+    <div class="detail-field"><label>Equipment</label><span>${equip}</span></div>
+    <div class="detail-field"><label>Duration</label><span>${get('duration')}</span></div>
+    <div class="detail-field"><label>Location</label><span>${get('location')}</span></div>
+    <div class="detail-field"><label>Local Discount</label><span>${get('local')==='yes'?'Yes (10% off)':'No'}</span></div>
+    ${get('notes')!=='—'?`<div class="detail-field full"><label>Notes</label><span>${get('notes')}</span></div>`:''}
+    <div class="detail-field"><label>Submitted</label><span>${bk.created_at?new Date(bk.created_at).toLocaleString('en-CA'):'—'}</span></div>
+  `;
+  document.getElementById('modalStatusRow').style.display = 'none';
+  document.getElementById('modalDelBtn').style.display = 'none';
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('detailModal').classList.remove('open'); modalCurrentId=null; }
+function deleteFromModal() { if(modalCurrentId) deleteBooking(modalCurrentId); }
+
+// ==================== BOOKINGS LIST ====================
+async function loadFormspree() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { alert('Enter your Formspree API key.'); return; }
+  localStorage.setItem('vss_formspree_key', key);
+  document.getElementById('bookingList').innerHTML='<div class="loading-msg">Loading...</div>';
+  try {
+    const res = await fetch('https://api.formspree.io/api/0/forms/mnjobejw/submissions?page_size=100',{
+      headers:{'Authorization':`Bearer ${key}`,'Accept':'application/json'}
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status} — check your API key`);
+    const data = await res.json();
+    onlineBookings = data.submissions || [];
+    document.getElementById('apiSetup').style.display='none';
+    renderBookingsList();
+  } catch(e) {
+    document.getElementById('bookingList').innerHTML=`<div class="loading-msg" style="color:#c62828;">${e.message}</div>`;
+  }
+}
+
+function renderBookingsList() {
+  const q      = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  const source = document.getElementById('sourceFilter')?.value||'all';
+
+  // Combine manual + online
+  const manualRows = manualBookings.map(b => ({ ...b, _type:'manual' }));
+  const onlineRows = onlineBookings.map((b,i) => {
+    const data = b.answers||b;
+    const get = k => data[k]?.value||data[k]||'';
+    return {
+      _type:'online', _idx:i,
+      name: get('name'), phone: get('phone'), email: get('email'),
+      date: '', booking_date_time: get('booking_date_time')||get('dates'),
+      equipment: get('equipment'), duration: get('duration'), location: get('location'),
+      local: get('local'), notes: get('notes'), created_at: b.created_at||'',
+    };
+  });
+
+  let all = [...manualRows, ...onlineRows].sort((a,b)=>{
+    const da = a.created_at||'', db = b.created_at||'';
+    return db.localeCompare(da);
+  });
+
+  if (source==='manual') all = all.filter(b=>b._type==='manual');
+  if (source==='online') all = all.filter(b=>b._type==='online');
+  if (q) all = all.filter(b=>{
+    const s = [b.name,b.phone,b.email,b.date,b.booking_date_time,b.location].join(' ').toLowerCase();
+    return s.includes(q);
+  });
+
+  document.getElementById('bookingCount').textContent = `${all.length} booking${all.length!==1?'s':''}`;
+
+  if (!all.length) {
+    document.getElementById('bookingList').innerHTML='<div class="empty-state">No bookings found.</div>';
+    return;
+  }
+
+  document.getElementById('bookingList').innerHTML = all.map(b => {
+    const isManual = b._type==='manual';
+    const qtyStr = isManual && (parseInt(b.quantity)||1) > 1 ? ` ×${b.quantity}` : '';
+    const timeStr = isManual
+      ? (b.startHour==='day'?'Full Day':`${fmtH(parseInt(b.startHour))} · ${EQUIP_LABELS[b.equipment]||b.equipment}${qtyStr}`)
+      : b.booking_date_time;
+    const dateDisp = isManual
+      ? new Date(b.date+'T12:00:00').toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'})
+      : '';
+    const clickFn = isManual ? `showBookingDetail('${b.id}')` : `showOnlineBookingDetail(${b._idx})`;
+    const equip = EQUIP_LABELS[b.equipment]||b.equipment||'—';
+    return `<div class="bk-card" onclick="${clickFn}">
+      <div class="bk-card-head">
+        <strong>${b.name||'—'}</strong>
+        <div class="bk-badges">
+          ${dateDisp?`<span class="badge badge-time">📅 ${dateDisp}</span>`:''}
+          ${timeStr?`<span class="badge badge-time">${timeStr}</span>`:''}
+          <span class="badge ${isManual?'badge-manual':'badge-online'}">${isManual?'📞 Phone':'🌐 Online'}</span>
+        </div>
+      </div>
+      <div class="bk-card-body">
+        <div class="bk-field"><label>Phone</label><a href="tel:${b.phone}" onclick="event.stopPropagation()">${b.phone||'—'}</a></div>
+        <div class="bk-field"><label>Equipment</label><span>${equip}${isManual&&(parseInt(b.quantity)||1)>1?` ×${b.quantity}`:''}</span></div>
+        <div class="bk-field"><label>Location</label><span>${b.location||'—'}</span></div>
+        <div class="bk-field"><label>Local</label><span>${b.local==='yes'?'Yes':'No'}</span></div>
+        ${isManual?`<div class="bk-field"><label>Status</label><span class="status-badge status-${b.status||'pending'}">${statusLabel(b.status)}</span></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== BOOKING STATUS ====================
+function statusLabel(s) {
+  return { pending:'Pending', confirmed:'Confirmed', deposit:'Deposit Paid', cancelled:'Cancelled' }[s||'pending'] || 'Pending';
+}
+
+function setBookingStatus(newStatus) {
+  if (!modalCurrentId) return;
+  const bk = manualBookings.find(b=>b.id===modalCurrentId);
+  if (!bk) return;
+  bk.status = newStatus;
+  saveAll();
+  showBookingDetail(modalCurrentId); // re-render modal
+  renderDayPanel();
+  renderBookingsList();
+}
+
+// ==================== CSV EXPORT ====================
+function exportCSV() {
+  const cols = ['Name','Phone','Email','Date','Time','Equipment','Quantity','Duration','Location','Local','Status','Payment','Notes','Source','Created'];
+  const rows = [cols.join(',')];
+
+  manualBookings.forEach(b => {
+    const timeLabel = b.startHour==='day'?'Full Day':`${fmtH(parseInt(b.startHour))} – ${fmtH(parseInt(b.startHour)+(parseInt(b.duration)||1))}`;
+    rows.push([
+      b.name, b.phone, b.email||'', b.date, timeLabel,
+      EQUIP_LABELS[b.equipment]||b.equipment, b.quantity||1, b.duration==='day'?'Full Day':b.duration+' hr',
+      b.location||'', b.local==='yes'?'Yes':'No', statusLabel(b.status),
+      b.payment||'', b.notes||'', 'Manual', b.created_at||''
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  });
+
+  onlineBookings.forEach(b => {
+    const data = b.answers||b;
+    const get = k => data[k]?.value||data[k]||'';
+    rows.push([
+      get('name'), get('phone'), get('email'), '', get('booking_date_time'),
+      get('equipment'), get('quantity')||1, get('duration'),
+      get('location'), get('local'), '', '', get('notes'), 'Online', b.created_at||''
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  });
+
+  const blob = new Blob([rows.join('\n')], { type:'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `valley-shore-bookings-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ==================== NOTICE BANNER ====================
+function saveNotice() {
+  const val = document.getElementById('noticeInput').value.trim();
+  localStorage.setItem('vss_notice', val);
+  const msg = document.getElementById('noticeMsg');
+  msg.style.color = '#2e7d32';
+  msg.textContent = '✓ Banner saved! Reload the public site to see it.';
+  setTimeout(() => msg.textContent='', 3000);
+}
+function clearNotice() {
+  localStorage.removeItem('vss_notice');
+  document.getElementById('noticeInput').value = '';
+  const msg = document.getElementById('noticeMsg');
+  msg.style.color = '#888';
+  msg.textContent = 'Banner cleared.';
+  setTimeout(() => msg.textContent='', 2500);
+}
+function initNoticeSettings() {
+  const val = localStorage.getItem('vss_notice') || '';
+  document.getElementById('noticeInput').value = val;
+}
+
+// ==================== PROMO CODES ====================
+function getPromoCodes() {
+  try { return JSON.parse(localStorage.getItem('vss_promo_codes') || '{}'); } catch(e) { return {}; }
+}
+function savePromoCodes(obj) { localStorage.setItem('vss_promo_codes', JSON.stringify(obj)); }
+
+function renderPromoList() {
+  const codes = getPromoCodes();
+  const list = document.getElementById('promoAdminList');
+  if (!list) return;
+  const entries = Object.entries(codes);
+  if (!entries.length) { list.innerHTML = '<div style="font-size:.82rem;color:#aaa;">No promo codes yet.</div>'; return; }
+  list.innerHTML = entries.map(([code, pct]) => `
+    <div class="promo-admin-row">
+      <span class="promo-code-tag">${code}</span>
+      <span class="promo-pct">${pct}% off</span>
+      <button class="promo-del" onclick="deletePromoCode('${code}')">Remove</button>
+    </div>`).join('');
+}
+
+function addPromoCode() {
+  const code = document.getElementById('newPromoCode').value.trim().toUpperCase();
+  const pct  = parseInt(document.getElementById('newPromoPct').value);
+  const msg  = document.getElementById('promoAdminMsg');
+  if (!code || !pct || pct < 1 || pct > 100) { msg.style.color='#c62828'; msg.textContent='Enter a valid code and discount (1-100%).'; return; }
+  const codes = getPromoCodes();
+  codes[code] = pct;
+  savePromoCodes(codes);
+  document.getElementById('newPromoCode').value = '';
+  document.getElementById('newPromoPct').value = '';
+  msg.style.color = '#2e7d32'; msg.textContent = `✓ Code "${code}" added!`;
+  setTimeout(() => msg.textContent='', 2500);
+  renderPromoList();
+}
+
+function deletePromoCode(code) {
+  const codes = getPromoCodes();
+  delete codes[code];
+  savePromoCodes(codes);
+  renderPromoList();
+}
+
+// ==================== STRIPE LINK ====================
+function saveStripeLink() {
+  const val = document.getElementById('stripeLink').value.trim();
+  localStorage.setItem('vss_stripe_link', val);
+  const msg = document.getElementById('stripeLinkMsg');
+  msg.style.color = '#2e7d32'; msg.textContent = '✓ Stripe link saved!';
+  setTimeout(() => msg.textContent='', 2500);
+}
+function initStripeSettings() {
+  const val = localStorage.getItem('vss_stripe_link') || '';
+  document.getElementById('stripeLink').value = val;
+}
+
+// ==================== BLACKOUTS ====================
+function getBlackouts() {
+  try { return JSON.parse(localStorage.getItem('vss_blackouts') || '[]'); } catch(e) { return []; }
+}
+function saveBlackouts(arr) { localStorage.setItem('vss_blackouts', JSON.stringify(arr)); }
+
+function renderBlackoutList() {
+  const list = document.getElementById('blackoutList');
+  if (!list) return;
+  const blackouts = getBlackouts();
+  if (!blackouts.length) { list.innerHTML='<div style="font-size:.82rem;color:#aaa;">No blackout ranges set.</div>'; return; }
+  list.innerHTML = blackouts.map((b,i) => `
+    <div class="blackout-row">
+      <div>
+        <div class="blackout-label">🚫 ${b.from} → ${b.to}</div>
+      </div>
+      <button class="blackout-del" onclick="deleteBlackout(${i})">Remove</button>
+    </div>`).join('');
+}
+
+function addBlackout() {
+  const from = document.getElementById('bl_from').value;
+  const to   = document.getElementById('bl_to').value;
+  if (!from || !to || from > to) { alert('Please enter a valid date range (From must be before To).'); return; }
+  const blackouts = getBlackouts();
+  blackouts.push({ from, to });
+  saveBlackouts(blackouts);
+  document.getElementById('bl_from').value = '';
+  document.getElementById('bl_to').value = '';
+  renderBlackoutList();
+}
+
+function deleteBlackout(idx) {
+  const blackouts = getBlackouts();
+  blackouts.splice(idx, 1);
+  saveBlackouts(blackouts);
+  renderBlackoutList();
+}
+
+// ==================== SETTINGS INIT ====================
+function initSettingsTab() {
+  initNoticeSettings();
+  renderPromoList();
+  initStripeSettings();
+}
+
+// Init on load
+document.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('vss_auth') === '1') renderBookingsList();
+});
+</script>
+</body>
+</html>
