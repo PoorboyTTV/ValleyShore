@@ -443,13 +443,6 @@
                   <input type="text" id="nb_location" placeholder="e.g. Osoyoos Beach..." />
                 </div>
                 <div class="fg">
-                  <label>Local Discount?</label>
-                  <select id="nb_local">
-                    <option value="no">No</option>
-                    <option value="yes">Yes (10% off)</option>
-                  </select>
-                </div>
-                <div class="fg">
                   <label>Status</label>
                   <select id="nb_status">
                     <option value="pending">Pending</option>
@@ -1098,7 +1091,6 @@ function saveManualBooking() {
     quantity:  parseInt(document.getElementById('nb_qty').value) || 1,
     status:    document.getElementById('nb_status').value || 'pending',
     location:  document.getElementById('nb_location').value.trim(),
-    local:     document.getElementById('nb_local').value,
     payment:   document.getElementById('nb_payment').value.trim(),
     notes:     document.getElementById('nb_notes').value.trim(),
     created_at: new Date().toISOString(),
@@ -1154,8 +1146,7 @@ function showBookingDetail(id) {
   const dateLabel = d.toLocaleDateString('en-CA',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
   const equip = EQUIP_LABELS[bk.equipment]||bk.equipment;
   const rate = RATES[bk.equipment]||{hr:20,day:120};
-  let est = bk.startHour==='day' ? rate.day : rate.hr*(parseInt(bk.duration)||1);
-  if (bk.local==='yes') est = Math.round(est*0.9);
+  const est = bk.startHour==='day' ? rate.day : rate.hr*(parseInt(bk.duration)||1);
 
   document.getElementById('modalBody').innerHTML = `
     <div class="detail-field"><label>Date</label><span>${dateLabel}</span></div>
@@ -1165,8 +1156,7 @@ function showBookingDetail(id) {
     <div class="detail-field"><label>Equipment</label><span>${equip}${(parseInt(bk.quantity)||1)>1?` × ${bk.quantity}`:''}</span></div>
     <div class="detail-field"><label>Duration</label><span>${bk.duration==='day'?'Full Day':bk.duration+' hr'}</span></div>
     <div class="detail-field"><label>Location</label><span>${bk.location||'—'}</span></div>
-    <div class="detail-field"><label>Local Discount</label><span>${bk.local==='yes'?'Yes (10% off)':'No'}</span></div>
-    <div class="detail-field"><label>Est. Total</label><span>$${est}${bk.local==='yes'?' (10% off)':''}</span></div>
+    <div class="detail-field"><label>Est. Total</label><span>$${est}</span></div>
     <div class="detail-field"><label>Status</label><span class="status-badge status-${bk.status||'pending'}">${statusLabel(bk.status)}</span></div>
     <div class="detail-field"><label>Payment</label><span>${bk.payment||'—'}</span></div>
     ${bk.notes?`<div class="detail-field full"><label>Notes</label><span>${bk.notes}</span></div>`:''}
@@ -1194,7 +1184,6 @@ function showOnlineBookingDetail(idx) {
     <div class="detail-field"><label>Equipment</label><span>${equip}</span></div>
     <div class="detail-field"><label>Duration</label><span>${get('duration')}</span></div>
     <div class="detail-field"><label>Location</label><span>${get('location')}</span></div>
-    <div class="detail-field"><label>Local Discount</label><span>${get('local')==='yes'?'Yes (10% off)':'No'}</span></div>
     ${get('notes')!=='—'?`<div class="detail-field full"><label>Notes</label><span>${get('notes')}</span></div>`:''}
     <div class="detail-field"><label>Submitted</label><span>${bk.created_at?new Date(bk.created_at).toLocaleString('en-CA'):'—'}</span></div>
   `;
@@ -1240,7 +1229,7 @@ function renderBookingsList() {
       name: get('name'), phone: get('phone'), email: get('email'),
       date: '', booking_date_time: get('booking_date_time')||get('dates'),
       equipment: get('equipment'), duration: get('duration'), location: get('location'),
-      local: get('local'), notes: get('notes'), created_at: b.created_at||'',
+      notes: get('notes'), created_at: b.created_at||'',
     };
   });
 
@@ -1287,7 +1276,6 @@ function renderBookingsList() {
         <div class="bk-field"><label>Phone</label><a href="tel:${b.phone}" onclick="event.stopPropagation()">${b.phone||'—'}</a></div>
         <div class="bk-field"><label>Equipment</label><span>${equip}${isManual&&(parseInt(b.quantity)||1)>1?` ×${b.quantity}`:''}</span></div>
         <div class="bk-field"><label>Location</label><span>${b.location||'—'}</span></div>
-        <div class="bk-field"><label>Local</label><span>${b.local==='yes'?'Yes':'No'}</span></div>
         ${isManual?`<div class="bk-field"><label>Status</label><span class="status-badge status-${b.status||'pending'}">${statusLabel(b.status)}</span></div>`:''}
       </div>
     </div>`;
@@ -1312,7 +1300,7 @@ function setBookingStatus(newStatus) {
 
 // ==================== CSV EXPORT ====================
 function exportCSV() {
-  const cols = ['Name','Phone','Email','Date','Time','Equipment','Quantity','Duration','Location','Local','Status','Payment','Notes','Source','Created'];
+  const cols = ['Name','Phone','Email','Date','Time','Equipment','Quantity','Duration','Location','Status','Payment','Notes','Source','Created'];
   const rows = [cols.join(',')];
 
   manualBookings.forEach(b => {
@@ -1320,7 +1308,7 @@ function exportCSV() {
     rows.push([
       b.name, b.phone, b.email||'', b.date, timeLabel,
       EQUIP_LABELS[b.equipment]||b.equipment, b.quantity||1, b.duration==='day'?'Full Day':b.duration+' hr',
-      b.location||'', b.local==='yes'?'Yes':'No', statusLabel(b.status),
+      b.location||'', statusLabel(b.status),
       b.payment||'', b.notes||'', 'Manual', b.created_at||''
     ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
   });
@@ -1331,7 +1319,7 @@ function exportCSV() {
     rows.push([
       get('name'), get('phone'), get('email'), '', get('booking_date_time'),
       get('equipment'), get('quantity')||1, get('duration'),
-      get('location'), get('local'), '', '', get('notes'), 'Online', b.created_at||''
+      get('location'), '', '', get('notes'), 'Online', b.created_at||''
     ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
   });
 

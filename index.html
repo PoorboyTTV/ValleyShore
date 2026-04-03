@@ -629,7 +629,7 @@
       <div class="hero-stats">
         <div class="hero-stat"><strong>$20</strong><span>/ hour from</span></div>
         <div class="hero-stat"><strong>Free</strong><span>Delivery included</span></div>
-        <div class="hero-stat"><strong>10%</strong><span>Local discount</span></div>
+        <div class="hero-stat"><strong>Promo</strong><span>Codes available</span></div>
       </div>
     </div>
   </div>
@@ -948,14 +948,6 @@
             </div>
 
             <div class="form-group">
-              <label>Are you a local? (10% off!)</label>
-              <select name="local" onchange="updateEstimate()">
-                <option value="no">No — just visiting</option>
-                <option value="yes">Yes — I live in the area</option>
-              </select>
-            </div>
-
-            <div class="form-group">
               <label>Notes / Questions</label>
               <textarea name="notes" placeholder="Any special requests, group size, experience level..."></textarea>
             </div>
@@ -996,10 +988,6 @@
           </div>
         </div>
 
-        <div class="local-badge">
-          <strong>10% Off</strong>
-          <span>for Osoyoos &amp; area locals</span>
-        </div>
 
       </div>
     </div>
@@ -1126,7 +1114,7 @@
       </div>
       <div class="t-card">
         <div class="t-stars">★★★★★</div>
-        <p class="t-text">As a local, I appreciate the 10% discount and the fact that they actually know the lake. Rented a tandem kayak with my daughter for the afternoon — perfect price, perfect experience. Super friendly team.</p>
+        <p class="t-text">They actually know the lake. Rented a tandem kayak with my daughter for the afternoon — perfect price, perfect experience. Super friendly team.</p>
         <div class="t-author">
           <div class="t-avatar">TR</div>
           <div>
@@ -1193,7 +1181,7 @@
         <button class="faq-q" onclick="toggleFaq(this)">
           How do I pay? <span class="faq-icon">+</span>
         </button>
-        <div class="faq-a">Payment is collected at delivery. We accept tap/NFC, Visa, Mastercard, Apple Pay, Google Pay, cash, and e-Transfer. If you're a local resident, mention it when booking and we'll automatically apply your 10% discount!</div>
+        <div class="faq-a">Payment is collected at delivery. We accept tap/NFC, Visa, Mastercard, Apple Pay, Google Pay, cash, and e-Transfer. Have a promo code? Enter it in the booking form before submitting to apply your discount automatically.</div>
       </div>
     </div>
   </div>
@@ -1296,7 +1284,6 @@
     </table>
     <div class="pricing-note">
       ✅ All rentals include paddles, life jackets, and dry bags — delivered free to your location.<br>
-      🏡 <strong>10% local discount</strong> for Osoyoos &amp; area residents — just mention it when booking.<br>
       📞 Group rates and custom packages available — call <a href="tel:2503207592">250-320-7592</a>.
     </div>
     <button class="btn btn-primary" onclick="closePricing();document.getElementById('booking').scrollIntoView({behavior:'smooth'})" style="width:100%;justify-content:center;margin-top:20px;">Book Now</button>
@@ -1681,15 +1668,12 @@
     pe.style.display = 'block';
     const rate = RATES[equip];
     let total = calcBase(rate, dur) * qty;
-    const isLocal = document.querySelector('select[name="local"]')?.value === 'yes';
-    if (isLocal) total = Math.round(total * 0.9);
     if (promoDiscount > 0) total = Math.round(total * (1 - promoDiscount / 100));
     const dl = durLabel(dur);
     const equipLabel = qty > 1 ? `${qty}× ${EQUIP_LABELS[equip]}` : EQUIP_LABELS[equip];
-    const discounts = [isLocal ? '10% local' : '', promoDiscount ? `${promoDiscount}% promo` : ''].filter(Boolean).join(' + ');
     document.getElementById('pe-equip').textContent = equipLabel;
     document.getElementById('pe-dur').textContent = dl + (selHour && selHour !== 'day' ? ` @ ${fmtHour(selHour)}` : '');
-    document.getElementById('pe-total').textContent = `$${total}${discounts ? ` (${discounts} off)` : ''}`;
+    document.getElementById('pe-total').textContent = `$${total}${promoDiscount ? ` (${promoDiscount}% off)` : ''}`;
   }
 
   /* ---- FORM SUBMIT ---- */
