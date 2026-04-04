@@ -539,12 +539,13 @@
     /* ========== SEASON BANNER ========== */
     .season-banner {
       background: linear-gradient(90deg, #023047, #0077B6);
-      color: #fff; text-align: center; padding: 11px 52px;
-      font-size: .88rem; font-weight: 600; position: relative; z-index: 200; line-height: 1.4;
+      color: #fff; text-align: center; padding: 11px 16px;
+      font-size: .88rem; font-weight: 600; z-index: 200; line-height: 1.4;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
     }
     .season-banner a { color: #ADE8F4; text-decoration: underline; }
     .season-close {
-      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      flex-shrink: 0; margin-left: auto;
       background: none; border: none; color: rgba(255,255,255,.85); font-size: 1.4rem;
       cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px;
     }
@@ -565,11 +566,12 @@
     /* ========== NOTICE BANNER ========== */
     .notice-banner {
       background: linear-gradient(90deg,var(--sand-dk),var(--sand));
-      color:#fff; text-align:center; padding:11px 52px;
-      font-size:.88rem; font-weight:600; position:relative; z-index:200; line-height:1.4;
+      color:#fff; padding:11px 16px;
+      font-size:.88rem; font-weight:600; z-index:200; line-height:1.4;
+      display:flex; align-items:center; justify-content:center; gap:10px;
     }
     .notice-close {
-      position:absolute; right:14px; top:50%; transform:translateY(-50%);
+      flex-shrink:0; margin-left:auto;
       background:none; border:none; color:rgba(255,255,255,.85); font-size:1.4rem;
       cursor:pointer; line-height:1; padding:2px 6px; border-radius:4px;
     }
