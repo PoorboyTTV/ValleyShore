@@ -644,6 +644,13 @@
 </div>
 
 <script>
+// ==================== UTILS ====================
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // ==================== AUTH ====================
 const HARDCODED_HASH = 'f7c8ba12d7034b0b7568def56ea3727a663c63995bae8cc520ab63e44c48cc9a';
 
@@ -988,8 +995,8 @@ function slotRow(h, bk, isFullDay) {
   return `<div class="slot-row booked-manual" onclick="showBookingDetail('${bk.id}')">
     <span class="slot-time">${timeLabel}</span>
     <div class="slot-info">
-      <div class="slot-name">${bk.name}${endH ? ` <span style="font-weight:400;color:#888;font-size:.75rem;">${endH}</span>` : ''}${sBadge}</div>
-      <div class="slot-detail">${equip}${qtyLabel} · ${bk.phone}${bk.location?' · '+bk.location:''}</div>
+      <div class="slot-name">${escHtml(bk.name)}${endH ? ` <span style="font-weight:400;color:#888;font-size:.75rem;">${endH}</span>` : ''}${sBadge}</div>
+      <div class="slot-detail">${escHtml(equip)}${qtyLabel} · ${escHtml(bk.phone)}${bk.location?' · '+escHtml(bk.location):''}</div>
     </div>
     <div class="slot-actions">
       <button class="slot-btn slot-btn-view" onclick="showBookingDetail('${bk.id}');event.stopPropagation()">View</button>
@@ -1150,15 +1157,15 @@ function showBookingDetail(id) {
   document.getElementById('modalBody').innerHTML = `
     <div class="detail-field"><label>Date</label><span>${dateLabel}</span></div>
     <div class="detail-field"><label>Time</label><span>${timeLabel}</span></div>
-    <div class="detail-field"><label>Phone</label><a href="tel:${bk.phone}">${bk.phone}</a></div>
-    <div class="detail-field"><label>Email</label><span>${bk.email ? `<a href="mailto:${bk.email}">${bk.email}</a>` : '—'}</span></div>
-    <div class="detail-field"><label>Equipment</label><span>${equip}${(parseInt(bk.quantity)||1)>1?` × ${bk.quantity}`:''}</span></div>
-    <div class="detail-field"><label>Duration</label><span>${bk.duration==='day'?'Full Day':bk.duration+' hr'}</span></div>
-    <div class="detail-field"><label>Location</label><span>${bk.location||'—'}</span></div>
+    <div class="detail-field"><label>Phone</label><a href="tel:${escHtml(bk.phone)}">${escHtml(bk.phone)}</a></div>
+    <div class="detail-field"><label>Email</label><span>${bk.email ? `<a href="mailto:${escHtml(bk.email)}">${escHtml(bk.email)}</a>` : '—'}</span></div>
+    <div class="detail-field"><label>Equipment</label><span>${escHtml(equip)}${(parseInt(bk.quantity)||1)>1?` × ${escHtml(bk.quantity)}`:''}</span></div>
+    <div class="detail-field"><label>Duration</label><span>${bk.duration==='day'?'Full Day':escHtml(bk.duration)+' hr'}</span></div>
+    <div class="detail-field"><label>Location</label><span>${escHtml(bk.location)||'—'}</span></div>
     <div class="detail-field"><label>Est. Total</label><span>$${est}</span></div>
     <div class="detail-field"><label>Status</label><span class="status-badge status-${bk.status||'pending'}">${statusLabel(bk.status)}</span></div>
-    <div class="detail-field"><label>Payment</label><span>${bk.payment||'—'}</span></div>
-    ${bk.notes?`<div class="detail-field full"><label>Notes</label><span>${bk.notes}</span></div>`:''}
+    <div class="detail-field"><label>Payment</label><span>${escHtml(bk.payment)||'—'}</span></div>
+    ${bk.notes?`<div class="detail-field full"><label>Notes</label><span>${escHtml(bk.notes)}</span></div>`:''}
     <div class="detail-field"><label>Added</label><span>${new Date(bk.created_at).toLocaleString('en-CA')}</span></div>
   `;
   document.getElementById('modalStatusRow').style.display = 'block';
@@ -1177,13 +1184,13 @@ function showOnlineBookingDetail(idx) {
   document.getElementById('modalSource').className = 'modal-source source-formspree';
   const equip = {sup:'Paddleboard',single:'Single Kayak',tandem:'2.5p Kayak',bundle:'Dual Bundle'}[get('equipment')]||get('equipment');
   document.getElementById('modalBody').innerHTML = `
-    <div class="detail-field"><label>Date &amp; Time</label><span>${get('booking_date_time')||get('dates')}</span></div>
-    <div class="detail-field"><label>Phone</label><a href="tel:${get('phone')}">${get('phone')}</a></div>
-    <div class="detail-field"><label>Email</label><span>${get('email')!=='—'?`<a href="mailto:${get('email')}">${get('email')}</a>`:'—'}</span></div>
-    <div class="detail-field"><label>Equipment</label><span>${equip}</span></div>
-    <div class="detail-field"><label>Duration</label><span>${get('duration')}</span></div>
-    <div class="detail-field"><label>Location</label><span>${get('location')}</span></div>
-    ${get('notes')!=='—'?`<div class="detail-field full"><label>Notes</label><span>${get('notes')}</span></div>`:''}
+    <div class="detail-field"><label>Date &amp; Time</label><span>${escHtml(get('booking_date_time')||get('dates'))}</span></div>
+    <div class="detail-field"><label>Phone</label><a href="tel:${escHtml(get('phone'))}">${escHtml(get('phone'))}</a></div>
+    <div class="detail-field"><label>Email</label><span>${get('email')!=='—'?`<a href="mailto:${escHtml(get('email'))}">${escHtml(get('email'))}</a>`:'—'}</span></div>
+    <div class="detail-field"><label>Equipment</label><span>${escHtml(equip)}</span></div>
+    <div class="detail-field"><label>Duration</label><span>${escHtml(get('duration'))}</span></div>
+    <div class="detail-field"><label>Location</label><span>${escHtml(get('location'))}</span></div>
+    ${get('notes')!=='—'?`<div class="detail-field full"><label>Notes</label><span>${escHtml(get('notes'))}</span></div>`:''}
     <div class="detail-field"><label>Submitted</label><span>${bk.created_at?new Date(bk.created_at).toLocaleString('en-CA'):'—'}</span></div>
   `;
   document.getElementById('modalStatusRow').style.display = 'none';
@@ -1264,17 +1271,17 @@ function renderBookingsList() {
     const equip = EQUIP_LABELS[b.equipment]||b.equipment||'—';
     return `<div class="bk-card" onclick="${clickFn}">
       <div class="bk-card-head">
-        <strong>${b.name||'—'}</strong>
+        <strong>${escHtml(b.name)||'—'}</strong>
         <div class="bk-badges">
           ${dateDisp?`<span class="badge badge-time">📅 ${dateDisp}</span>`:''}
-          ${timeStr?`<span class="badge badge-time">${timeStr}</span>`:''}
+          ${timeStr?`<span class="badge badge-time">${escHtml(timeStr)}</span>`:''}
           <span class="badge ${isManual?'badge-manual':'badge-online'}">${isManual?'📞 Phone':'🌐 Online'}</span>
         </div>
       </div>
       <div class="bk-card-body">
-        <div class="bk-field"><label>Phone</label><a href="tel:${b.phone}" onclick="event.stopPropagation()">${b.phone||'—'}</a></div>
-        <div class="bk-field"><label>Equipment</label><span>${equip}${isManual&&(parseInt(b.quantity)||1)>1?` ×${b.quantity}`:''}</span></div>
-        <div class="bk-field"><label>Location</label><span>${b.location||'—'}</span></div>
+        <div class="bk-field"><label>Phone</label><a href="tel:${escHtml(b.phone)}" onclick="event.stopPropagation()">${escHtml(b.phone)||'—'}</a></div>
+        <div class="bk-field"><label>Equipment</label><span>${escHtml(equip)}${isManual&&(parseInt(b.quantity)||1)>1?` ×${escHtml(b.quantity)}`:''}</span></div>
+        <div class="bk-field"><label>Location</label><span>${escHtml(b.location)||'—'}</span></div>
         ${isManual?`<div class="bk-field"><label>Status</label><span class="status-badge status-${b.status||'pending'}">${statusLabel(b.status)}</span></div>`:''}
       </div>
     </div>`;
