@@ -7,6 +7,7 @@
   <meta name="description" content="Rent kayaks, paddleboards & bundles in Osoyoos, BC. Free delivery to your beach, dock, or campsite. Book online or call 250-320-7592. Serving Osoyoos, Oliver & OK Falls." />
   <meta name="keywords" content="kayak rental Osoyoos, paddleboard rental Osoyoos, SUP rental Osoyoos Lake, kayak hire BC, things to do Osoyoos, South Okanagan water sports, paddleboard delivery Osoyoos" />
   <link rel="canonical" href="https://www.valleyshoreservices.com/" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 
   <!-- Open Graph / Social Sharing -->
   <meta property="og:type" content="website" />
@@ -535,6 +536,32 @@
     .fc-verdict.caution{ background: rgba(255,87,34,.35); }
     .fc-verdict.danger { background: rgba(244,67,54,.35); }
 
+    /* ========== SEASON BANNER ========== */
+    .season-banner {
+      background: linear-gradient(90deg, #023047, #0077B6);
+      color: #fff; text-align: center; padding: 11px 52px;
+      font-size: .88rem; font-weight: 600; position: relative; z-index: 200; line-height: 1.4;
+    }
+    .season-banner a { color: #ADE8F4; text-decoration: underline; }
+    .season-close {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: rgba(255,255,255,.85); font-size: 1.4rem;
+      cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px;
+    }
+    .season-close:hover { color: #fff; background: rgba(0,0,0,.15); }
+
+    /* ========== STICKY CALL BUTTON (mobile only) ========== */
+    .sticky-call {
+      display: none;
+      position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+      z-index: 8000; background: var(--ocean); color: #fff;
+      padding: 15px 36px; border-radius: 50px;
+      font-family: inherit; font-size: 1rem; font-weight: 700;
+      box-shadow: 0 6px 24px rgba(0,119,182,.45); white-space: nowrap;
+      align-items: center; gap: 8px; border: none; cursor: pointer; text-decoration: none;
+    }
+    @media (max-width: 768px) { .sticky-call { display: flex; } }
+
     /* ========== NOTICE BANNER ========== */
     .notice-banner {
       background: linear-gradient(90deg,var(--sand-dk),var(--sand));
@@ -618,6 +645,12 @@
   </style>
 </head>
 <body>
+
+<!-- ===== SEASON BANNER ===== -->
+<div class="season-banner" id="seasonBanner" style="display:none;">
+  <span id="seasonText"></span>
+  <button class="season-close" onclick="sessionStorage.setItem('seasonDismissed','1');this.parentElement.style.display='none'" title="Dismiss">×</button>
+</div>
 
 <!-- ===== NOTICE BANNER ===== -->
 <div class="notice-banner" id="noticeBanner" style="display:none;">
@@ -1848,6 +1881,24 @@
       .catch(() => showToast('Could not submit — please call/text 250-320-7592'));
   }
 
+  /* ---- SEASON BANNER ---- */
+  (function() {
+    if (sessionStorage.getItem('seasonDismissed')) return;
+    const now = new Date();
+    const openDate  = new Date('2026-05-16');
+    const closeDate = new Date('2026-09-30');
+    const text = document.getElementById('seasonText');
+    const banner = document.getElementById('seasonBanner');
+    if (now < openDate) {
+      const days = Math.ceil((openDate - now) / 86400000);
+      text.innerHTML = `🌊 Opening May Long Weekend — ${days} day${days !== 1 ? 's' : ''} away &nbsp;·&nbsp; <a href="#book">Bookings are open now!</a>`;
+      banner.style.display = 'block';
+    } else if (now <= closeDate) {
+      text.innerHTML = `🌊 Now Open for the Season! &nbsp;·&nbsp; <a href="#book">Book online</a> or call <a href="tel:2503207592">250-320-7592</a>`;
+      banner.style.display = 'block';
+    }
+  })();
+
   /* ---- NOTICE BANNER ---- */
   (function() {
     const notice = localStorage.getItem('vss_notice');
@@ -1877,5 +1928,9 @@
     }
   });
 </script>
+
+<!-- ===== STICKY CALL BUTTON (mobile) ===== -->
+<a href="tel:2503207592" class="sticky-call">📞 Call / Text Us</a>
+
 </body>
 </html>
