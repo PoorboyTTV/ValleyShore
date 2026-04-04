@@ -305,19 +305,6 @@
 </head>
 <body>
 
-<!-- FIRST-TIME SETUP -->
-<div class="login-screen" id="setupScreen" style="display:none;">
-  <div class="login-card">
-    <div class="logo">🔑</div>
-    <h1>Create Admin Password</h1>
-    <p>No password set yet. Create one to secure your admin panel.</p>
-    <input type="password" id="setupPw" placeholder="New password" onkeydown="if(event.key==='Enter')doSetup()" autofocus />
-    <input type="password" id="setupPw2" placeholder="Confirm password" onkeydown="if(event.key==='Enter')doSetup()" style="margin-top:0;" />
-    <button onclick="doSetup()">Set Password</button>
-    <div class="login-error" id="setupError"></div>
-  </div>
-</div>
-
 <!-- LOGIN -->
 <div class="login-screen" id="loginScreen">
   <div class="login-card">
@@ -658,24 +645,13 @@
 
 <script>
 // ==================== AUTH ====================
+const HARDCODED_HASH = 'f7c8ba12d7034b0b7568def56ea3727a663c63995bae8cc520ab63e44c48cc9a';
+
 async function sha256(s) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
-function getHash() { return localStorage.getItem('vss_admin_pw_hash'); }
-
-async function doSetup() {
-  const pw  = document.getElementById('setupPw').value;
-  const pw2 = document.getElementById('setupPw2').value;
-  const err = document.getElementById('setupError');
-  if (!pw || !pw2) { err.textContent = 'Enter and confirm your password.'; return; }
-  if (pw !== pw2)  { err.textContent = 'Passwords do not match.'; return; }
-  if (pw.length < 8) { err.textContent = 'Minimum 8 characters.'; return; }
-  localStorage.setItem('vss_admin_pw_hash', await sha256(pw));
-  document.getElementById('setupScreen').style.display = 'none';
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('pwInput').focus();
-}
+function getHash() { return localStorage.getItem('vss_admin_pw_hash') || HARDCODED_HASH; }
 
 async function doLogin() {
   const pw = document.getElementById('pwInput').value;
@@ -700,14 +676,7 @@ function showDashboard() {
   document.getElementById('dashboard').style.display = 'block';
   initAll();
 }
-
-// On load: show setup if no password set, skip to dashboard if already authed
-if (sessionStorage.getItem('vss_auth') === '1') {
-  showDashboard();
-} else if (!getHash()) {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('setupScreen').style.display = 'flex';
-}
+if (sessionStorage.getItem('vss_auth') === '1') showDashboard();
 
 async function changePassword() {
   const cur = document.getElementById('curPw').value;
