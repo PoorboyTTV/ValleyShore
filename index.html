@@ -485,12 +485,19 @@
       .nav-links, .nav-cta { display: none; }
       .nav-toggle { display: flex; flex-direction: column; }
       .nav-links.open {
-        display: flex; flex-direction: column; position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0; background: var(--deep);
-        align-items: center; justify-content: center; gap: 32px; z-index: 999;
+        display: flex; flex-direction: column;
+        position: absolute; top: 100%; left: 0; right: 0;
+        background: var(--deep); gap: 0; z-index: 999;
+        box-shadow: 0 8px 24px rgba(0,0,0,.35);
+        padding: 8px 0 16px;
       }
-      .nav-links.open a { font-size: 1.4rem; font-weight: 700; }
-      .nav-links.open .nav-cta { display: block; }
+      .nav-links.open a {
+        font-size: 1rem; font-weight: 600; padding: 13px 24px;
+        border-bottom: 1px solid rgba(255,255,255,.08); color: rgba(255,255,255,.9);
+      }
+      .nav-links.open a:last-of-type { border-bottom: none; }
+      .nav-links.open .nav-cta { display: block; padding: 12px 24px 0; }
+      .nav-links.open .nav-cta a { border-bottom: none; padding: 0; }
     }
     @media (max-width: 600px) {
       section { padding: 64px 0; }
@@ -656,7 +663,7 @@
 <!-- ===== SEASON BANNER ===== -->
 <div class="season-banner" id="seasonBanner" style="display:none;">
   <span id="seasonText"></span>
-  <button class="season-close" onclick="sessionStorage.setItem('seasonDismissed','1');this.parentElement.style.display='none';document.getElementById('nav').style.top='0'" title="Dismiss">×</button>
+  <button class="season-close" onclick="sessionStorage.setItem('seasonDismissed','1');this.parentElement.style.display='none';updateNavTop();" title="Dismiss">×</button>
 </div>
 
 <!-- ===== NOTICE BANNER ===== -->
@@ -1407,15 +1414,40 @@
   /* ---- NAV ---- */
   const nav = document.getElementById('nav');
   const navLinks = document.getElementById('navLinks');
+  const stickyCall = document.querySelector('.sticky-call');
+
+  function getNavTop() {
+    const banner = document.getElementById('seasonBanner');
+    const noticeBanner = document.getElementById('noticeBanner');
+    let h = 0;
+    if (banner && banner.offsetHeight) h += Math.max(0, banner.offsetHeight - window.scrollY);
+    if (noticeBanner && noticeBanner.offsetHeight) h += Math.max(0, noticeBanner.offsetHeight - window.scrollY);
+    return Math.round(h);
+  }
+
+  function updateNavTop() {
+    nav.style.top = getNavTop() + 'px';
+  }
+
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 40);
+    updateNavTop();
   });
+  window.addEventListener('resize', updateNavTop);
+
   function toggleNav() {
-    navLinks.classList.toggle('open');
+    const isOpen = navLinks.classList.toggle('open');
+    if (stickyCall) stickyCall.style.display = isOpen ? 'none' : '';
   }
   function closeNav() {
     navLinks.classList.remove('open');
+    if (stickyCall) stickyCall.style.display = '';
   }
+
+  // Close menu when tapping outside
+  document.addEventListener('click', (e) => {
+    if (navLinks.classList.contains('open') && !nav.contains(e.target)) closeNav();
+  });
 
   /* ---- TOAST ---- */
   function showToast(msg, duration = 3000) {
@@ -1900,13 +1932,11 @@
     const closeDate = new Date('2026-09-30');
     const text = document.getElementById('seasonText');
     const banner = document.getElementById('seasonBanner');
-    const nav = document.getElementById('nav');
 
     function showBanner(html) {
       text.innerHTML = html;
       banner.style.display = 'block';
-      // Push fixed nav below the banner
-      if (nav) nav.style.top = banner.offsetHeight + 'px';
+      updateNavTop();
     }
 
     if (now < openDate) {
@@ -1923,6 +1953,7 @@
     if (notice && notice.trim()) {
       document.getElementById('noticeText').textContent = notice;
       document.getElementById('noticeBanner').style.display = 'block';
+      updateNavTop();
     }
   })();
 
