@@ -133,6 +133,8 @@
     .hero-photo {
       position: absolute; inset: 0;
       background: url('images/hero.jpg') center center / cover no-repeat;
+      background-image: image-set(url('images/hero.webp') type('image/webp'), url('images/hero.jpg') type('image/jpeg'));
+      background-size: cover; background-position: center center;
       opacity: .28;
     }
     .hero-bg-waves { position: absolute; bottom: -2px; left: 0; right: 0; }
@@ -760,7 +762,11 @@
 <div class="gallery">
   <div class="gallery-strip">
     <div class="g-img">
-      <img src="images/hero.jpg" alt="Kayak and paddleboard rentals on Osoyoos Lake, BC" loading="lazy" />
+      <picture>
+        <source srcset="images/hero-mobile.webp" type="image/webp" media="(max-width: 640px)" />
+        <source srcset="images/hero.webp" type="image/webp" />
+        <img src="images/hero.jpg" alt="Kayak and paddleboard rentals on Osoyoos Lake, BC" loading="lazy" />
+      </picture>
     </div>
     <div class="g-img">
       <img src="images/sup.jpg" alt="Stand-up paddleboards ready for rental at Osoyoos Lake" loading="lazy" />
