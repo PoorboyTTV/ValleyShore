@@ -541,17 +541,20 @@
     /* ========== SEASON BANNER ========== */
     .season-banner {
       background: linear-gradient(90deg, #023047, #0077B6);
-      color: #fff; text-align: center; padding: 11px 16px;
-      font-size: .88rem; font-weight: 600; z-index: 200; line-height: 1.4;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
+      color: #fff; padding: 10px 44px 10px 16px;
+      font-size: .85rem; font-weight: 600; line-height: 1.5;
+      text-align: center; position: relative;
     }
-    .season-banner a { color: #ADE8F4; text-decoration: underline; }
+    .season-banner a { color: #ADE8F4; text-decoration: underline; white-space: nowrap; }
     .season-close {
-      flex-shrink: 0; margin-left: auto;
-      background: none; border: none; color: rgba(255,255,255,.85); font-size: 1.4rem;
-      cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 4px;
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: rgba(255,255,255,.8); font-size: 1.2rem;
+      cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 4px;
     }
-    .season-close:hover { color: #fff; background: rgba(0,0,0,.15); }
+    .season-close:hover { color: #fff; background: rgba(0,0,0,.2); }
+    @media (max-width: 600px) {
+      .season-banner { font-size: .78rem; padding: 9px 38px 9px 12px; }
+    }
 
     /* ========== STICKY CALL BUTTON (mobile only) ========== */
     .sticky-call {
@@ -653,7 +656,7 @@
 <!-- ===== SEASON BANNER ===== -->
 <div class="season-banner" id="seasonBanner" style="display:none;">
   <span id="seasonText"></span>
-  <button class="season-close" onclick="sessionStorage.setItem('seasonDismissed','1');this.parentElement.style.display='none'" title="Dismiss">×</button>
+  <button class="season-close" onclick="sessionStorage.setItem('seasonDismissed','1');this.parentElement.style.display='none';document.getElementById('nav').style.top='0'" title="Dismiss">×</button>
 </div>
 
 <!-- ===== NOTICE BANNER ===== -->
@@ -1897,13 +1900,20 @@
     const closeDate = new Date('2026-09-30');
     const text = document.getElementById('seasonText');
     const banner = document.getElementById('seasonBanner');
+    const nav = document.getElementById('nav');
+
+    function showBanner(html) {
+      text.innerHTML = html;
+      banner.style.display = 'block';
+      // Push fixed nav below the banner
+      if (nav) nav.style.top = banner.offsetHeight + 'px';
+    }
+
     if (now < openDate) {
       const days = Math.ceil((openDate - now) / 86400000);
-      text.innerHTML = `🌊 Opening May Long Weekend — ${days} day${days !== 1 ? 's' : ''} away &nbsp;·&nbsp; <a href="#book">Bookings are open now!</a>`;
-      banner.style.display = 'block';
+      showBanner(`🌊 Opening May Long Weekend — ${days} day${days !== 1 ? 's' : ''} away &nbsp;·&nbsp; <a href="#book">Bookings are open now!</a>`);
     } else if (now <= closeDate) {
-      text.innerHTML = `🌊 Now Open for the Season! &nbsp;·&nbsp; <a href="#book">Book online</a> or call <a href="tel:2503207592">250-320-7592</a>`;
-      banner.style.display = 'block';
+      showBanner(`🌊 Now Open for the Season! &nbsp;·&nbsp; <a href="#book">Book online</a> or call <a href="tel:2503207592">250-320-7592</a>`);
     }
   })();
 
